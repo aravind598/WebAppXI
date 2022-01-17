@@ -1,0 +1,54 @@
+site_name: Image Classification App Boilerplate
+repo_url: https://github.com/smaranjitghose/img_ai_app_boilerplate
+
+nav:
+    - Home: index.md
+    - Getting Started: getting_started.md
+    - Model Integration: model_integration.md
+    - Frontend Changes: frontend.md
+    - Online Data Storage: firebase.md
+    - Testing: testing.md 
+    - Deployment: deployment.md
+    - Hosting: hosting.md
+
+
+theme: 
+    name: 'material'
+    logo: 'images/favicon.png'
+    favicon: 'images/favicon.png'
+    palette:
+        scheme: slate
+        primary: deep purple
+        accent: lime
+    font:
+        text: Poppins
+    features:
+        - navigation.expand
+        - searcn.highlight
+        - navigation.sections
+        - navigation.top
+        - toc.integrate
+
+plugins:
+  - search:
+      separator: '[\s\-\.]+'
+
+google_analytics:
+  - UA-XXXXXXXX-X
+  - auto
+
+markdown_extensions:
+  - attr_list
+  - toc:
+      permalink: false
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/smaranjitghose
+    - icon: fontawesome/brands/github
+      link: https://github.com/smaranjitghose
