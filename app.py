@@ -1,10 +1,10 @@
 from functools import cache
 import streamlit as st
 import numpy as np
-import time
 import tensorflow as tf
-from PIL import Image
-from img_classifier import prediction, prepare, prepare_my, prediction_my
+from PIL import Image, ImageOps
+import io
+from img_classifier import prediction, prepare
 import traceback
 #from img_classifier import our_image_classifier
 # import firebase_bro
@@ -15,21 +15,22 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 global model
 global my_model
 
-@st.experimental_singleton 
+@st.experimental_singleton
+@cache
 def call_model():
     model = tf.keras.models.load_model("enetd0")
     return model
 
 
-
-
+@st.experimental_singleton
+@cache
 def call_my_model():
     my_model = tf.keras.models.load_model("mymodel")
     return my_model
 
 
 
-@st.cache # cache the function so predictions aren't always redone (Streamlit refreshes every click)
+#@st.experimental_singleton # cache the function so predictions aren't always redone (Streamlit refreshes every click)
 def make_prediction(model, image):
     """
     Takes an image and uses model (a trained TensorFlow model) to make a
@@ -60,6 +61,47 @@ def make_my_prediction(my_model,image):
     image_pred = prediction_my(my_model,image_array)
     return str(image_pred)
 
+def prepare_my(bytestr, img_shape=224):
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    size = (img_shape, img_shape)
+    image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return data
+
+
+def prediction_my(model, pred):
+    classes = ["Fruit", "Dog", "Person", "Car", "Motorbike", "Flower", "Cat"]
+    # run the inference
+    prediction = model.predict(pred)
+    #print(classes[prediction.argmax()])
+    return classes[prediction.argmax()]
+
+@st.experimental_memo
+@st.cache
+@cache
+def cache_image(image_byte):
+    byteImgIO = io.BytesIO()
+    image = Image.open(io.BytesIO(image_byte)).convert('RGB')
+    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 70)
+
+    byteImgIO.seek(0)
+    image = byteImgIO.read()
+    
+    return image
+
+@cache
 def main():
     # Metadata for the web app
     st.set_page_config(
@@ -68,8 +110,9 @@ def main():
     page_icon= ":shark:",
     initial_sidebar_state = "collapsed",
     )
-    
-    
+
+    model = call_model()
+    my_model = call_my_model()
     
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
@@ -97,8 +140,9 @@ def main():
         # If the user uploads an image
             if uploaded_file is not None:
                 # Opening our image
-                image = uploaded_file.read()
-                print(type(image))
+                single_image = uploaded_file.read()
+                image = cache_image(image_byte = single_image)
+                #print(type(image))
                 #image = Image.open(uploaded_file)
                 # # Send our image to database for later analysis
                 # firebase_bro.send_img(image)
@@ -109,11 +153,11 @@ def main():
                     #with st.spinner("The magic of our AI has started...."):
                         #label = our_image_classifier(image)
                     if choose_model != "Model 1 (Custom Model)":
-                        model = call_model()
+                        #model = call_model()
                         label=make_prediction(model,image)
                         st.success("We predict this image to be: "+label)
                     else:
-                        my_model = call_my_model()
+                        #my_model = call_my_model()
                         labels=make_my_prediction(my_model,image)
                         st.success("We predict this image to be: "+ labels)
                         #time.sleep(8)

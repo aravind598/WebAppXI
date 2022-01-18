@@ -18,7 +18,7 @@ def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
 
 def prediction(model, pred):
     prednumpyarray = model.predict(pred)
-    print(prednumpyarray.shape)
+    #print(prednumpyarray.shape)
     predarray = tf.keras.applications.efficientnet.decode_predictions(prednumpyarray, top=5)
     return predarray
 
@@ -47,7 +47,7 @@ def prediction_my(model, pred):
     classes = ["Fruit", "Dog", "Person", "Car", "Motorbike", "Flower", "Cat"]
     # run the inference
     prediction = model.predict(pred)
-    print(classes[prediction.argmax()])
+    #print(classes[prediction.argmax()])
     return classes[prediction.argmax()]
 
 
