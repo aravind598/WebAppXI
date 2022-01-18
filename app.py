@@ -83,11 +83,11 @@ def main():
     initial_sidebar_state = "collapsed",
     )
 
-    model = call_model("enetd0")
-    my_model = call_model("mymodel")
-    tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
-    tflite_model_uint8 = call_interpreter(model_path="mymodel/model.tflite")
-    placeholder = None
+    with st.spinner("The magic of our AI has started...."):
+        model = call_model("enetd0")
+        my_model = call_model("mymodel")
+        tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
+        tflite_model_uint8 = call_interpreter(model_path="mymodel/model.tflite")
     
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
@@ -110,7 +110,10 @@ def main():
         st.subheader("By Your Cool Dev Name")
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
-        placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+        
+        if uploaded_file is not None:
+            placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+            
         # When the user clicks the predict button
         if st.button("Predict"):
         # If the user uploads an image
