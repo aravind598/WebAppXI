@@ -4,9 +4,10 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image, ImageOps
 import io
-from img_classifier import getOutput, prepare_my, prepare_my_uint8, make_my_prediction, make_prediction
+from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction
 import traceback
 import copy
+import time
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
@@ -44,6 +45,29 @@ def call_interpreter(model_path):
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
     return interpreter
+
+@st.experimental_memo
+@st.cache
+@cache
+def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.uint8)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #img_shape=224
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = np.uint8(image_array)
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return np.uint8(data)
 
 
 @st.experimental_memo
@@ -83,7 +107,7 @@ def main():
     initial_sidebar_state = "collapsed",
     )
 
-    with st.spinner("The magic of our AI has started...."):
+    with st.spinner("The magic of our AI is starting.... Please Wait"):
         model = call_model("enetd0")
         my_model = call_model("mymodel")
         tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
@@ -116,6 +140,7 @@ def main():
             
         # When the user clicks the predict button
         if st.button("Predict"):
+            start = time.time()
         # If the user uploads an image
             if uploaded_file is not None:
                 # Opening our image
@@ -136,21 +161,26 @@ def main():
                         if choose_model == "Model 1 (Custom Model)":
                             #model = call_model()
                             label=make_my_prediction(my_model,image)
+                            t = time.time() - start
                         elif choose_model == "Model 2 (EfficientNet)":
                             #my_model = call_my_model()
                             label=make_prediction(model,image)
+                            t = time.time() - start
                             #time.sleep(8)
                         elif choose_model == "Model 4 (Quantised Model)":
                             label = getOutput(tflite_model_uint8, input_data)
-                            pass
+                            t = time.time() - start
                         elif choose_model == "Model 5 (UnQuantised Model)":
                             #input_data = prepare_my_uint8(image)
                             label = getOutput(tflite_model, prepare_my(image))
-                            pass
+                            t = time.time() - start
                         else:
-                            pass
+                            #TODO 
+                            label = "Not yet done"
+                            t = time.time() - start
                     placeholder.empty()
                     st.success("We predict this image to be: "+ label)
+                    st.success("Time Taken "+ str(t))
                     #rating = st.slider("Do you mind rating our service?",1,10)
                 except Exception as e:
                     st.error(e)

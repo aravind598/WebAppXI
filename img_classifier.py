@@ -78,25 +78,6 @@ def prepare_my(bytestr: bytes, shape = (1,224,224,3) ):
     data[0] = normalized_image_array
     return data
 
-def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
-    # Create the array of the right shape to feed into the keras model
-    # The 'length' or number of images you can put into the array is
-    # determined by the first position in the shape tuple, in this case 1.
-    data = np.ndarray(shape, dtype=np.uint8)
-    # Replace this with the path to your image
-    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
-    #resize the image to a 224x224 with the same strategy as in TM2:
-    #resizing the image to be at least 224x224 and then cropping from the center
-    #img_shape=224
-    #size = (img_shape, img_shape)
-    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
-    #turn the image into a numpy array
-    image_array = np.asarray(image)
-    # Normalize the image
-    normalized_image_array = np.uint8(image_array)
-    # Load the image into the array
-    data[0] = normalized_image_array
-    return np.uint8(data)
 
 
 #@st.experimental_singleton # cache the function so predictions aren't always redone (Streamlit refreshes every click)
