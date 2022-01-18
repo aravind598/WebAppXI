@@ -6,6 +6,7 @@ from PIL import Image, ImageOps
 import io
 from img_classifier import prediction, prepare
 import traceback
+import copy
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
@@ -17,16 +18,70 @@ global my_model
 
 @st.experimental_singleton
 @cache
-def call_model():
-    model = tf.keras.models.load_model("enetd0")
+def call_model(model_path):
+    model = tf.keras.models.load_model(model_path)
     return model
-
 
 @st.experimental_singleton
 @cache
-def call_my_model():
-    my_model = tf.keras.models.load_model("mymodel")
-    return my_model
+def call_interpreter(model_path):
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+    return interpreter
+
+
+
+
+
+def prepare_my(bytestr: bytes, shape = (1,224,224,3) ):
+    """[summary]
+
+    Args:
+        bytestr (bytes): [image bytestr from read]
+        shape (tuple, optional): [description]. Defaults to (1,224,224,3).
+
+    Returns:
+        ndarray: [Output the data in the form of [1,224,224,3] ]]
+    """    
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.float32)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return data
+
+def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.uint8)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #img_shape=224
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = np.uint8(image_array)
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return np.uint8(data)
+
+
 
 
 
@@ -45,7 +100,7 @@ def make_prediction(model, image):
     image_pred = prediction(model,image_array)
     return str(image_pred)
 
-#@st.cache
+
 def make_my_prediction(my_model,image):
     """
     Takes an image and uses model (a trained TensorFlow model) to make a
@@ -61,39 +116,41 @@ def make_my_prediction(my_model,image):
     image_pred = prediction_my(my_model,image_array)
     return str(image_pred)
 
-def prepare_my(bytestr, img_shape=224):
-    # Create the array of the right shape to feed into the keras model
-    # The 'length' or number of images you can put into the array is
-    # determined by the first position in the shape tuple, in this case 1.
-    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
-    # Replace this with the path to your image
-    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
-    #resize the image to a 224x224 with the same strategy as in TM2:
-    #resizing the image to be at least 224x224 and then cropping from the center
-    size = (img_shape, img_shape)
-    image = ImageOps.fit(image, size, Image.ANTIALIAS)
-    #turn the image into a numpy array
-    image_array = np.asarray(image)
-    # Normalize the image
-    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
-    # Load the image into the array
-    data[0] = normalized_image_array
-    return data
-
-
 def prediction_my(model, pred):
-    classes = ["Fruit", "Dog", "Person", "Car", "Motorbike", "Flower", "Cat"]
+    classes = ["Car","Cat","Dog", "Flower", "Fruit", "Motorbike", "Person"]
     # run the inference
     prediction = model.predict(pred)
     #print(classes[prediction.argmax()])
     return classes[prediction.argmax()]
 
+def getOutput(interpreter, input_data):
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    #print(input_details)
+    #print(output_details)
+    # Test the model on random input data.
+    #input_shape = input_details[0]['shape']
+    #input_data = np.array(np.random.random_sample(input_shape), dtype=np.uint8)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+
+    interpreter.invoke()
+
+    # The function `get_tensor()` returns a copy of the tensor data.
+    # Use `tensor()` in order to get a pointer to the tensor.
+    classes = ["Car","Cat","Dog", "Flower", "Fruit", "Motorbike", "Person"]
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    #print(output_data)
+    return classes[output_data.argmax()]
+
+
 @st.experimental_memo
 @st.cache
 @cache
-def cache_image(image_byte):
+def cache_image(image_byte: bytes, img_shape: int = 224) -> bytes:
     byteImgIO = io.BytesIO()
-    image = Image.open(io.BytesIO(image_byte)).convert('RGB')
+    image = Image.open(io.BytesIO(image_byte)).convert('RGB')   
+    size = (img_shape, img_shape)
+    image = ImageOps.fit(image, size, Image.ANTIALIAS)
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 70)
 
     byteImgIO.seek(0)
@@ -111,15 +168,19 @@ def main():
     initial_sidebar_state = "collapsed",
     )
 
-    model = call_model()
-    my_model = call_my_model()
+    model = call_model("enetd0")
+    my_model = call_model("mymodel")
+    tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
+    tflite_model_uint8 = call_interpreter(model_path="mymodel/model.tflite")
     
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
     ("Model 1 (Custom Model)", # original 10 classes
-     "Model 2 (11 food classes)", # original 10 classes + donuts
-     "Model 3 (11 food classes + non-food class)") # 11 classes (same as above) + not_food class
-)
+     "Model 2 (EfficientNet)", # original 10 classes + donuts
+     "Model 3 (11 food classes + non-food class)",
+     "Model 4 (Quantised Model)",
+     "Model 5 (UnQuantised Model)") # 11 classes (same as above) + not_food class
+    )
     
     menu = ['Home', 'About', 'Contact', 'Feedback']
     choice = st.sidebar.selectbox("Menu", menu)
@@ -133,15 +194,17 @@ def main():
         st.subheader("By Your Cool Dev Name")
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
-        
-        
+        if uploaded_file is not None :
+            placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
         # When the user clicks the predict button
         if st.button("Predict"):
         # If the user uploads an image
+            placeholder.empty()
             if uploaded_file is not None:
                 # Opening our image
                 single_image = uploaded_file.read()
                 image = cache_image(image_byte = single_image)
+                input_data = prepare_my_uint8(image)
                 #print(type(image))
                 #image = Image.open(uploaded_file)
                 # # Send our image to database for later analysis
@@ -150,18 +213,25 @@ def main():
                 st.image(image,use_column_width=True)
                 st.write("")
                 try:
-                    #with st.spinner("The magic of our AI has started...."):
-                        #label = our_image_classifier(image)
-                    if choose_model != "Model 1 (Custom Model)":
-                        #model = call_model()
-                        label=make_prediction(model,image)
-                        st.success("We predict this image to be: "+label)
-                    else:
-                        #my_model = call_my_model()
-                        labels=make_my_prediction(my_model,image)
-                        st.success("We predict this image to be: "+ labels)
-                        #time.sleep(8)
-                    
+                    with st.spinner("The magic of our AI has started...."):
+                            #label = our_image_classifier(image)
+                        if choose_model == "Model 1 (Custom Model)":
+                            #model = call_model()
+                            label=make_my_prediction(my_model,image)
+                        elif choose_model == "Model 2 (EfficientNet)":
+                            #my_model = call_my_model()
+                            label=make_prediction(model,image)
+                            #time.sleep(8)
+                        elif choose_model == "Model 4 (Quantised Model)":
+                            label = getOutput(tflite_model_uint8, input_data)
+                            pass
+                        elif choose_model == "Model 5 (UnQuantised Model)":
+                            #input_data = prepare_my_uint8(image)
+                            label = getOutput(tflite_model, prepare_my(image))
+                            pass
+                        else:
+                            pass
+                    st.success("We predict this image to be: "+ label)
                     #rating = st.slider("Do you mind rating our service?",1,10)
                 except Exception as e:
                     st.error(e)

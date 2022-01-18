@@ -1,7 +1,7 @@
-0 Fruit
-1 Dog
-2 Person
-3 Car
-4 Motorbike
-5 Flower
-6 Cat
+0 Car
+1 Cat
+2 Dog
+3 Flower
+4 Fruit
+5 Motorbike
+6 Person
