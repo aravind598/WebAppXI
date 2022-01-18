@@ -50,6 +50,129 @@ def prediction_my(model, pred):
     #print(classes[prediction.argmax()])
     return classes[prediction.argmax()]
 
+def prepare_my(bytestr: bytes, shape = (1,224,224,3) ):
+    """[summary]
+
+    Args:
+        bytestr (bytes): [image bytestr from read]
+        shape (tuple, optional): [description]. Defaults to (1,224,224,3).
+
+    Returns:
+        ndarray: [Output the data in the form of [1,224,224,3] ]]
+    """    
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.float32)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return data
+
+def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.uint8)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #img_shape=224
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = np.uint8(image_array)
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return np.uint8(data)
+
+
+#@st.experimental_singleton # cache the function so predictions aren't always redone (Streamlit refreshes every click)
+def make_prediction(model, image):
+    """
+    Takes an image and uses model (a trained TensorFlow model) to make a
+    prediction. Using the EfficientNet
+
+    Returns:
+     image (preproccessed)
+     pred_class (prediction class from class_names)
+     pred_conf (model confidence)
+    """
+    image_array = prepare(image,expand_dims=True)
+    image_pred = prediction(model,image_array)
+    return str(image_pred)
+
+
+def make_my_prediction(my_model,image):
+    """
+    Takes an image and uses model (a trained TensorFlow model) to make a
+    prediction. Using My Model
+
+    Returns:
+     image (preproccessed)
+     pred_class (prediction class from class_names)
+     pred_conf (model confidence)
+    """
+    #my_model = tf.keras.models.load_model("mymodel")
+    image_array = prepare_my(image)
+    image_pred = prediction_my(my_model,image_array)
+    return str(image_pred)
+
+def prediction_my(model, pred):
+    """[Prediction using my model]
+
+    Args:
+        model ([type]): [description]
+        pred ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    classes = ["Car","Cat","Dog", "Flower", "Fruit", "Motorbike", "Person"]
+    # run the inference
+    prediction = model.predict(pred)
+    #print(classes[prediction.argmax()])
+    return classes[prediction.argmax()]
+
+def getOutput(interpreter, input_data):
+    """[Get output from interpreter using tflite models]
+
+    Args:
+        interpreter ([type]): [description]
+        input_data ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """    
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    #print(input_details)
+    #print(output_details)
+    # Test the model on random input data.
+    #input_shape = input_details[0]['shape']
+    #input_data = np.array(np.random.random_sample(input_shape), dtype=np.uint8)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+
+    interpreter.invoke()
+
+    # The function `get_tensor()` returns a copy of the tensor data.
+    # Use `tensor()` in order to get a pointer to the tensor.
+    classes = ["Car","Cat","Dog", "Flower", "Fruit", "Motorbike", "Person"]
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    #print(output_data)
+    return classes[output_data.argmax()]
 
 
 """
