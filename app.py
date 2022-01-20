@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image, ImageOps
 import io
+import requests
 from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction
 import traceback
 import copy
@@ -40,7 +41,7 @@ def call_interpreter(model_path):
         model_path ([type]): [description]
 
     Returns:
-        [type]: [description]
+        [type]: [Returns an interpreter]
     """
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
@@ -50,6 +51,15 @@ def call_interpreter(model_path):
 @st.cache
 @cache
 def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
+    """[prepare the data for uint8 inference]
+
+    Args:
+        bytestr ([type]): [description]
+        shape (tuple, optional): [description]. Defaults to (1,224,224,3).
+
+    Returns:
+        [type]: [description]
+    """
     # Create the array of the right shape to feed into the keras model
     # The 'length' or number of images you can put into the array is
     # determined by the first position in the shape tuple, in this case 1.
@@ -113,6 +123,8 @@ def main():
         tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
         tflite_model_uint8 = call_interpreter(model_path="mymodel/model.tflite")
     
+
+        
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
     ("Model 1 (Custom Model)", # original 10 classes
@@ -132,24 +144,49 @@ def main():
         st.title('Title of your Awesome App')
         # Now setting up a header text
         st.subheader("By Your Cool Dev Name")
+        
+        sentence = st.text_input('Input your sentence here:') 
+        image = None
+        if sentence:
+            try:
+                response = requests.get(sentence)
+                image = Image.open(io.BytesIO(response.content))
+                image = response.content
+                #st.write(str(sentence))
+            except Exception as e:
+                st.error("Exception occured due to url not having image " + str(e))
+                image = None
+                #st.error()
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
         if uploaded_file is not None:
             placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
-            
+        elif image is not None:
+            placeholder = st.image(copy.copy(image),use_column_width=True)
+        else:
+            pass
         # When the user clicks the predict button
         if st.button("Predict"):
             start = time.time()
         # If the user uploads an image
-            if uploaded_file is not None:
-                # Opening our image
-                #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
-                single_image = uploaded_file.read()
-                image = cache_image(image_byte = single_image)
-                input_data = prepare_my_uint8(image)
-                #print(type(image))
-                #image = Image.open(uploaded_file)
+            if uploaded_file is not None or image is not None:
+                
+                if uploaded_file:
+                    # Opening our image
+                    #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+                    single_image = uploaded_file.read()
+                    image = cache_image(image_byte = single_image)
+                    input_data = prepare_my_uint8(image)
+                    #print(type(image))
+                    #image = Image.open(uploaded_file
+                
+                #Predict using the image link
+                elif image:
+                    image = cache_image(image_byte = image)
+                    input_data = prepare_my_uint8(image)
+                else:
+                    st.error("Error")
                 # # Send our image to database for later analysis
                 # firebase_bro.send_img(image)
                 # Let's see what we got
@@ -178,7 +215,8 @@ def main():
                             #TODO 
                             label = "Not yet done"
                             t = time.time() - start
-                    placeholder.empty()
+                    if placeholder:
+                        placeholder.empty()
                     st.success("We predict this image to be: "+ label)
                     st.success("Time Taken "+ str(t))
                     #rating = st.slider("Do you mind rating our service?",1,10)
