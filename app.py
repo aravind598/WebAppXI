@@ -1,28 +1,21 @@
+from functools import cache
 import streamlit as st
 from streamlit_tensorboard import st_tensorboard
 import numpy as np
-import time
 import tensorflow as tf
-<<<<<<< Updated upstream
-from PIL import Image
-from img_classifier import prediction, prepare
-=======
 from PIL import Image, ImageOps
 import io
 import requests
 from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction, createserver, st_capture
->>>>>>> Stashed changes
 import traceback
+import copy
+import time
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
 # Just making sure we are not bothered by File Encoding warnings
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-<<<<<<< Updated upstream
-global models
-#model = tf.keras.models.load_model()
-=======
 global model; global my_model; global tflite_colab; global tflite_model_uint8; global tflite_model 
 
 @st.experimental_singleton
@@ -85,25 +78,63 @@ def call_colab(model_path):
 @cache
 def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
     """[prepare the data for uint8 inference]
->>>>>>> Stashed changes
 
-@st.experimental_singleton # cache the function so predictions aren't always redone (Streamlit refreshes every click)
-def make_prediction(image):
-    """
-    Takes an image and uses model (a trained TensorFlow model) to make a
-    prediction.
+    Args:
+        bytestr ([type]): [description]
+        shape (tuple, optional): [description]. Defaults to (1,224,224,3).
 
     Returns:
-     image (preproccessed)
-     pred_class (prediction class from class_names)
-     pred_conf (model confidence)
+        [type]: [description]
     """
-    model = tf.keras.models.load_model("enetd0")
-    image_array = prepare(image,expand_dims=True)
-    image_pred = prediction(model,image_array)
-    return str(image_pred)
+    # Create the array of the right shape to feed into the keras model
+    # The 'length' or number of images you can put into the array is
+    # determined by the first position in the shape tuple, in this case 1.
+    data = np.ndarray(shape, dtype=np.uint8)
+    # Replace this with the path to your image
+    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
+    #resize the image to a 224x224 with the same strategy as in TM2:
+    #resizing the image to be at least 224x224 and then cropping from the center
+    #img_shape=224
+    #size = (img_shape, img_shape)
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    #turn the image into a numpy array
+    image_array = np.asarray(image)
+    # Normalize the image
+    normalized_image_array = np.uint8(image_array)
+    # Load the image into the array
+    data[0] = normalized_image_array
+    return np.uint8(data)
 
+
+@st.experimental_memo
+@st.cache
+@cache
+def cache_image(image_byte: bytes, img_shape: int = 224) -> bytes:
+    """[Cache the image and makes the image smaller before doing stuff]
+
+    Args:
+        image_byte (bytes): [Get from reading the file/image using image.read() or file.read()]
+        img_shape (int, optional): [size of the default prediction/image tensor i.e needs to be 224x224 in image size for all my models]. Defaults to 224.
+
+    Returns:
+        bytes: [return a new bytes object that is smaller/faster to interpret]
+    """
+    byteImgIO = io.BytesIO()
+    image = Image.open(io.BytesIO(image_byte)).convert('RGB')   
+    size = (img_shape, img_shape)
+    image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 70)
+
+    byteImgIO.seek(0)
+    image = byteImgIO.read()
+    
+    return image
+
+@cache
 def main():
+    """
+    [Main function all the UI is here]
+    """
     # Metadata for the web app
     st.set_page_config(
     page_title = "Title of the webpage",
@@ -111,15 +142,6 @@ def main():
     page_icon= ":shark:",
     initial_sidebar_state = "collapsed",
     )
-<<<<<<< Updated upstream
-    choose_model = st.sidebar.selectbox(
-    "Pick model you'd like to use",
-    ("Model 1", # original 10 classes
-     "Model 2 (11 food classes)", # original 10 classes + donuts
-     "Model 3 (11 food classes + non-food class)") # 11 classes (same as above) + not_food class
-    )
-    menu = ['Home', 'About', 'Contact', 'Feedback']
-=======
 
     with st.spinner("The magic of our AI is starting.... Please Wait"):
         model = call_efficient("enetd0")
@@ -140,16 +162,15 @@ def main():
     )
     
     menu = ['Home', 'Stats', 'Contact', 'Feedback']
->>>>>>> Stashed changes
     choice = st.sidebar.selectbox("Menu", menu)
+    
+
 
     if choice == "Home":
         # Let's set the title of our awesome web app
         st.title('Title of your Awesome App')
         # Now setting up a header text
         st.subheader("By Your Cool Dev Name")
-<<<<<<< Updated upstream
-=======
         
         if st.button("Create Server"):
             service = st_capture(createserver())
@@ -169,31 +190,42 @@ def main():
                 st.error("Exception occured due to url not having image " + str(e))
                 image = None
                 #st.error()
->>>>>>> Stashed changes
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
+        if uploaded_file is not None:
+            placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+        elif image is not None:
+            placeholder = st.image(copy.copy(image),use_column_width=True)
+        else:
+            pass
         # When the user clicks the predict button
         if st.button("Predict"):
+            start = time.time()
         # If the user uploads an image
-            if uploaded_file is not None:
-                # Opening our image
-                image = uploaded_file.read()
-                print(type(image))
-                #image = Image.open(uploaded_file)
+            if uploaded_file is not None or image is not None:
+                
+                if uploaded_file:
+                    # Opening our image
+                    #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+                    single_image = uploaded_file.read()
+                    image = cache_image(image_byte = single_image)
+                    input_data = prepare_my_uint8(image)
+                    #print(type(image))
+                    #image = Image.open(uploaded_file
+                
+                #Predict using the image link
+                elif image:
+                    image = cache_image(image_byte = image)
+                    input_data = prepare_my_uint8(image)
+                else:
+                    st.error("Error")
                 # # Send our image to database for later analysis
                 # firebase_bro.send_img(image)
                 # Let's see what we got
                 st.image(image,use_column_width=True)
                 st.write("")
                 try:
-<<<<<<< Updated upstream
-                    #with st.spinner("The magic of our AI has started...."):
-                        #label = our_image_classifier(image)
-                    label=make_prediction(image)
-                        #time.sleep(8)
-                    st.success("We predict this image to be: "+label)
-=======
                     with st.spinner("The magic of our AI has started...."):
                             #label = our_image_classifier(image)
                         if choose_model == "Model 1 (Custom Model)":
@@ -223,7 +255,6 @@ def main():
                         placeholder.empty()
                     st.success("We predict this image to be: "+ label)
                     st.success("Time Taken "+ str(t))
->>>>>>> Stashed changes
                     #rating = st.slider("Do you mind rating our service?",1,10)
                 except Exception as e:
                     st.error(e)
