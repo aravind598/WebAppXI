@@ -31,7 +31,7 @@ def call_model(model_path):
     """
     model = tf.keras.models.load_model(model_path)
     model.make_predict_function()
-    model.summary()
+    #model.summary()
     return model
 
 @st.experimental_singleton
@@ -39,7 +39,7 @@ def call_model(model_path):
 def call_efficient(model_path):
     model = tf.keras.models.load_model(model_path)
     model.make_predict_function()
-    model.summary()
+    #model.summary()
     return model
 
 @st.experimental_singleton
@@ -147,7 +147,7 @@ def main():
         model = call_efficient("enetd0")
         my_model = call_model("mymodel")
         tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
-        tflite_model_uint8 = call_uint8(model_path="mymodel/model.tflite")
+        tflite_model_uint8 = call_uint8(model_path="mymodel/model_quant.tflite")
         tflite_colab = call_colab(model_path="mymodel/my_model.tflite")
     
 

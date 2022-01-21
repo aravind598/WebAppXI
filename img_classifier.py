@@ -1,6 +1,4 @@
 import tensorflow as tf
-<<<<<<< Updated upstream
-=======
 from PIL import Image
 import numpy as np
 import io
