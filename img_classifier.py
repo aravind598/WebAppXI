@@ -6,7 +6,7 @@ import numpy as np
 import io
 from contextlib import contextmanager, redirect_stdout
 from io import StringIO
->>>>>>> Stashed changes
+
 
 def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
     img = tf.io.decode_image(bytestr, channels=3, dtype=tf.dtypes.float32)
@@ -26,9 +26,6 @@ def prediction(model, pred):
     print(prednumpyarray.shape)
     predarray = tf.keras.applications.efficientnet.decode_predictions(prednumpyarray, top=5)
     return predarray
-
-<<<<<<< Updated upstream
-=======
 
 
 def prediction_my(model, pred):
@@ -152,8 +149,6 @@ def getOutput(interpreter, input_data, input_details=None, output_details=None, 
     #print(output_data)
     
 
-
->>>>>>> Stashed changes
 """
 def our_image_classifier(image):
     '''
