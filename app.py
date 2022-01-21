@@ -171,11 +171,7 @@ def main():
         st.title('Title of your Awesome App')
         # Now setting up a header text
         st.subheader("By Your Cool Dev Name")
-        
-        if st.button("Create Server"):
-            service = st_capture(createserver())
-            if st.button("Delete Server"):
-                pass
+
                 
         #sentence = st.text_input('Input your sentence here:')
         sentence = st.text_input('Input your image url here:') 
