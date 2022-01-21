@@ -3,3 +3,4 @@ tensorflow-cpu
 pillow
 numpy
 azureml-core
+streamlit-tensorboard
