@@ -3,7 +3,10 @@ from PIL import Image
 import numpy as np
 import io
 from contextlib import contextmanager, redirect_stdout
-from io import StringIO
+from io import StringIO, BytesIO
+import base64
+import requests
+import json
 
 
 def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
@@ -145,7 +148,20 @@ def getOutput(interpreter, input_data, input_details=None, output_details=None, 
         return classes[output_data.argmax()]
     
     #print(output_data)
-    
+
+"""
+def azure_prediction(jsonImage, uri):
+    url = uri.replace("/score","")
+    requests.get(url)
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(uri, data=jsonImage, headers=headers)
+    print(response.json())
+    return response.json()"""
+        
+
+
+
+
 
 """
 def our_image_classifier(image):

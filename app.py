@@ -6,10 +6,12 @@ import tensorflow as tf
 from PIL import Image, ImageOps
 import io
 import requests
-from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction, createserver, st_capture
+from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction
 import traceback
 import copy
 import time
+import base64
+import json
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
@@ -17,6 +19,9 @@ import time
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 global model; global my_model; global tflite_colab; global tflite_model_uint8; global tflite_model 
+global picture
+global uri
+uri = None
 
 @st.experimental_singleton
 @cache
@@ -53,13 +58,6 @@ def call_interpreter(model_path):
     Returns:
         [type]: [Returns an interpreter]
     """
-    interpreter = tf.lite.Interpreter(model_path=model_path)
-    interpreter.allocate_tensors()
-    return interpreter
-
-@st.experimental_singleton
-@cache
-def call_uint8(model_path):
     interpreter = tf.lite.Interpreter(model_path=model_path)
     interpreter.allocate_tensors()
     return interpreter
@@ -106,10 +104,19 @@ def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
     return np.uint8(data)
 
 
+def azure_prediction(jsonImage, uri):
+    url = uri.replace("/score", "")
+    requests.get(url)
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(uri, data=jsonImage, headers=headers)
+    print(response.json())
+    return response.json()
+
+
 @st.experimental_memo
 @st.cache
 @cache
-def cache_image(image_byte: bytes, img_shape: int = 224) -> bytes:
+def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
     Args:
@@ -124,10 +131,15 @@ def cache_image(image_byte: bytes, img_shape: int = 224) -> bytes:
     size = (img_shape, img_shape)
     image = ImageOps.fit(image, size, Image.ANTIALIAS)
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 70)
-
+    if azure:
+        img_byte = byteImgIO.getvalue()  # bytes
+        img_base64 = base64.b64encode(img_byte)  # Base64-encoded bytes * not str
+        img_str = img_base64.decode('latin-1')  # str
+        data = {"inference": img_str}
+        return bytes(json.dumps(data),encoding='utf-8')
+    
     byteImgIO.seek(0)
     image = byteImgIO.read()
-    
     return image
 
 @cache
@@ -137,21 +149,21 @@ def main():
     """
     # Metadata for the web app
     st.set_page_config(
-    page_title = "Title of the webpage",
+    page_title = "WebApp",
     layout = "centered",
-    page_icon= ":shark:",
+    page_icon= "🧊",
     initial_sidebar_state = "collapsed",
     )
 
     with st.spinner("The magic of our AI is starting.... Please Wait"):
         model = call_efficient("enetd0")
         my_model = call_model("mymodel")
-        tflite_model = call_interpreter(model_path="mymodel/model_unquant.tflite")
-        tflite_model_uint8 = call_uint8(model_path="mymodel/model_quant.tflite")
-        tflite_colab = call_colab(model_path="mymodel/my_model.tflite")
+        tflite_model = call_interpreter(model_path="mymodel/teaching_unquant.tflite")
+        tflite_model_uint8 = call_interpreter(model_path="mymodel/teaching_quant.tflite")
+        tflite_colab = call_colab(model_path="mymodel/efficientlite0.tflite")
     
 
-        
+    #st.balloons()
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
     ("Model 1 (Custom Model)", # original 10 classes
@@ -165,14 +177,21 @@ def main():
     choice = st.sidebar.selectbox("Menu", menu)
     
 
+        
 
     if choice == "Home":
         # Let's set the title of our awesome web app
-        st.title('Title of your Awesome App')
+        st.title("Aravind's Application")
         # Now setting up a header text
-        st.subheader("By Your Cool Dev Name")
-
-                
+        #st.subheader("By Your Cool Dev Name")
+        my_expandering = st.expander(label='Model URL Input')
+        with my_expandering:
+            try:
+                uri = st.text_input('Enter Azure ML Inference URL here:')
+            except:
+                pass
+        st.write("The current Inference URL for Azure ML is, " + uri)
+        
         #sentence = st.text_input('Input your sentence here:')
         sentence = st.text_input('Input your image url here:') 
         image = None
@@ -186,17 +205,99 @@ def main():
                 st.error("Exception occured due to url not having image " + str(e))
                 image = None
                 #st.error()
+        
+        my_expander = st.expander(label='Camera Input')
+        with my_expander:
+            #'Hello there!'
+            #clicked = st.button('Click me!')
+            #TODO
+            picture = st.camera_input("Take a picture")
+            if picture:
+                label = None
+                with st.empty():
+                    st.image(copy.copy(picture))
+                    single_image = picture.read()
+                    predict_but = st.button("Prediction")
+                    image = cache_image(image_byte = single_image)
+                    input_data = prepare_my_uint8(image)
+                    if predict_but:
+                        try:
+                            with st.spinner("The magic of our AI has started...."):
+                                #TODO
+                                pass
+                        
+                        #rating = st.slider("Do you mind rating our service?",1,10)
+                        except Exception as e:
+                            st.error(e)
+                            st.error(traceback.format_exc())
+                            st.error("We apologize something went wrong 🙇🏽‍♂️")
+                            
+                st.success("We predict this image to be: " + label)
+                
+
+
+                
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
+        #Copy images if not error
+        uploaded_file1 = copy.copy(uploaded_file)
+        uploaded_copy = copy.copy(uploaded_file)
+        image1 = copy.copy(image)
+        picture1 = copy.copy(picture)
+
+        jsonImage = None
         if uploaded_file is not None:
-            placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+            upload = uploaded_file.read()
+            jsonImage = cache_image(image_byte=upload, azure=True)
+
+            
+        if uploaded_file is not None:
+            placeholder = st.image(uploaded_file1.read(),use_column_width=True)
         elif image is not None:
-            placeholder = st.image(copy.copy(image),use_column_width=True)
+            placeholder = st.image(image1.read(),use_column_width=True)
+        elif picture is not None:
+            placeholder = st.image(picture1.read(),use_column_width=True)
         else:
             pass
+        checking_list = ["http", "/score"]
+        #azpredictbut = st.button("Azure ML Predict")
+        try:
+            if uri:
+                if all(x in uri for x in checking_list):
+                    #st.write(str(uriparts in uri for uriparts in checking_list))
+                    if st.button("Azure ML Predict"):
+                            if uploaded_file is not None or image is not None:
+                                t = time.time()
+                                if jsonImage:
+                                    headers = {"Content-Type": "application/json"}
+                                    response = requests.post(uri, data=jsonImage, headers=headers)
+                                    label = str(response.text)
+                                    #label = azure_prediction(jsonImage, uri)
+                                else:
+                                    label = "error"
+                                    st.error("JsonImage error")
+                                    
+                                st.success(label)
+                                st.success("Time taken is : " + str(time.time()- t))
+                            
+                            else:
+                                st.error("Can you please upload an image 🙇🏽‍♂️")
+                    else:
+                        pass#st.error("Button not pressed")
+                else:
+                    uri = ""
+                    st.error("URL is not correct/valid or empty. Did you include the /score? ")
+            else:
+                pass
+                #st.error("URL is empty.")
+        except Exception as e:
+            st.error(str(e))
+            
+            
+
         # When the user clicks the predict button
-        if st.button("Predict"):
+        if st.button("Local Prediction"):
             start = time.time()
         # If the user uploads an image
             if uploaded_file is not None or image is not None:
@@ -204,11 +305,12 @@ def main():
                 if uploaded_file:
                     # Opening our image
                     #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
-                    single_image = uploaded_file.read()
+                    single_image = uploaded_copy.read()
                     image = cache_image(image_byte = single_image)
                     input_data = prepare_my_uint8(image)
                     #print(type(image))
                     #image = Image.open(uploaded_file
+                    
                 
                 #Predict using the image link
                 elif image:
@@ -228,17 +330,22 @@ def main():
                             #model = call_model()
                             label=make_my_prediction(my_model,image)
                             t = time.time() - start
+                        
                         elif choose_model == "Model 2 (EfficientNet)":
                             #my_model = call_my_model()
                             label=make_prediction(model,image)
                             t = time.time() - start
                             #time.sleep(8)
                         elif choose_model == "Model 3 (Colab)":
+                            
+                            
                             label=getOutput(tflite_colab,prepare_my(image),colab=True)
                             t = time.time() - start
+                            
                         elif choose_model == "Model 4 (Quantised Model)":
                             label = getOutput(tflite_model_uint8, input_data)
                             t = time.time() - start
+                            
                         elif choose_model == "Model 5 (UnQuantised Model)":
                             #input_data = prepare_my_uint8(image)
                             label = getOutput(tflite_model, prepare_my(image))
