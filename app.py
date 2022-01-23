@@ -190,14 +190,38 @@ def main():
         st.title("Aravind's Application")
         # Now setting up a header text
         #st.subheader("By Your Cool Dev Name")
+        
+        #Expander 1
         my_expandering = st.expander(label='Model URL Input')
         with my_expandering:
             try:
                 uri = st.text_input('Enter Azure ML Inference URL here:')
             except:
-                pass
-        st.write("The current Inference URL for Azure ML is, " + uri)
+                uri = ""
+        if uri:
+            st.write("The current Inference URL for Azure ML is, " + uri)
         
+        my_expanders = st.expander(label="QR Code Input")
+        checking_list = ["http", "/score"]
+        with my_expanders:
+            QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
+            qrCodeDetector = cv2.QRCodeDetector()
+            try:
+                if st.button("Altair") and QR_file:
+                    nparr = np.fromstring(QR_file.read(), np.uint8)
+                    print(nparr)
+                    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                    decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
+                    if all(x in uri for x in checking_list):
+                        uri = decodedText
+                        st.success("Azure ML Url is at: " + decodedText)
+                    else:
+                        st.error(f"URI of {decodedText} is not valid")
+            except Exception as e:
+                st.error("Failure" + str(e))
+                uri = ""
+
+        #Expander 2
         #Changed from this
         #sentence = st.text_input('Input your sentence here:')
         # To this using an expander
@@ -215,10 +239,10 @@ def main():
                     st.error("Exception occured due to url not having image " + str(e))
                     image = None
                     #st.error()
-        
+                    
 
 
-                
+        #Expander 3
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
@@ -321,7 +345,7 @@ def main():
                         elif choose_model == "Model 3 (Colab)":
                             
                             
-                            label=getOutput(tflite_colab,prepare_my(image),colab=True)
+                            label=getOutput(tflite_colab,prepare_my(image,colab=True),colab=True)
                             t = time.time() - start
                             
                         elif choose_model == "Model 4 (Quantised Model)":
@@ -330,7 +354,7 @@ def main():
                             
                         elif choose_model == "Model 5 (UnQuantised Model)":
                             #input_data = prepare_my_uint8(image)
-                            label = getOutput(tflite_model, prepare_my(image))
+                            label = getOutput(tflite_model, prepare_my(image),colab=True)
                             t = time.time() - start
                         else:
                             #TODO 

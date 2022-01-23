@@ -32,7 +32,7 @@ def prediction_my(model, pred):
     #print(classes[prediction.argmax()])
     return classes[prediction.argmax()]
 
-def prepare_my(bytestr: bytes, shape = (1,224,224,3) ):
+def prepare_my(bytestr: bytes, shape = (1,224,224,3), colab=False):
     """[summary]
 
     Args:
@@ -55,7 +55,12 @@ def prepare_my(bytestr: bytes, shape = (1,224,224,3) ):
     #turn the image into a numpy array
     image_array = np.asarray(image)
     # Normalize the image
-    normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    normalized_image_array = image_array.astype(np.float32)
+    if colab:
+        normalized_image_array /= 255.0
+    else: normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
+    
+        
     # Load the image into the array
     data[0] = normalized_image_array
     return data
