@@ -19,8 +19,9 @@ import json
 # Just making sure we are not bothered by File Encoding warnings
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-global model; global my_model; global tflite_colab; global tflite_model_uint8; global tflite_model 
-global picture
+global model; global my_model; global tflite_colab; 
+#global tflite_model_uint8; global tflite_model 
+#global picture
 global uri
 global sentence
 uri = None
@@ -74,43 +75,11 @@ def call_colab(model_path):
     return interpreter
 
 
-@st.experimental_memo
-@st.cache
-@cache
-def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
-    """[prepare the data for uint8 inference]
-
-    Args:
-        bytestr ([type]): [description]
-        shape (tuple, optional): [description]. Defaults to (1,224,224,3).
-
-    Returns:
-        [type]: [description]
-    """
-    # Create the array of the right shape to feed into the keras model
-    # The 'length' or number of images you can put into the array is
-    # determined by the first position in the shape tuple, in this case 1.
-    data = np.ndarray(shape, dtype=np.uint8)
-    # Replace this with the path to your image
-    image = Image.open(io.BytesIO(bytestr)).convert('RGB')
-    #resize the image to a 224x224 with the same strategy as in TM2:
-    #resizing the image to be at least 224x224 and then cropping from the center
-    #img_shape=224
-    #size = (img_shape, img_shape)
-    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
-    #turn the image into a numpy array
-    image_array = np.asarray(image)
-    # Normalize the image
-    normalized_image_array = np.uint8(image_array)
-    # Load the image into the array
-    data[0] = normalized_image_array
-    return np.uint8(data)
 
 
-
-@st.experimental_memo
-@st.cache
-@cache
+#@st.experimental_memo
+#@st.cache
+#@cache
 def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
@@ -170,16 +139,16 @@ def main():
     
 
     #st.balloons()
-    
+
     #Sidebar selection
     choose_model = st.sidebar.selectbox(
-    "Pick model you'd like to use",
-    ("Model 1 (Custom Model)", # original 10 classes
-     "Model 2 (EfficientNet)", # original 10 classes + donuts
-     "Model 3 (Colab)",
-     "Model 4 (Quantised Model)",
-     "Model 5 (UnQuantised Model)") # 11 classes (same as above) + not_food class
-    )
+        "Pick model you'd like to use",
+        ("Model 1 (Custom Model)",  # original 10 classes
+         "Model 2 (EfficientNet)",  # original 10 classes + donuts
+         "Model 3 (Colab)") )
+         #"Model 4 (Quantised Model)",
+         #"Model 5 (UnQuantised Model)")  11 classes (same as above) + not_food class
+    #)
     
     menu = ['Home', 'Stats', 'Contact', 'Feedback']
     choice = st.sidebar.selectbox("Menu", menu)
@@ -205,7 +174,7 @@ def main():
         #QR code input but need to manually copy and paste into the above line to store the uri
         #my_expanders = st.expander(label="QR Code Input")
         checking_list = ["http", "/score"]
-        """
+        a = """
         with my_expanders:
             QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
             qrCodeDetector = cv2.QRCodeDetector()
@@ -320,7 +289,7 @@ def main():
                     #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
                     single_image = uploaded_copy.read()
                     image = cache_image(image_byte = single_image)
-                    input_data = prepare_my_uint8(image)
+                    #input_data = prepare_my_uint8(image)
                     #print(type(image))
                     #image = Image.open(uploaded_file
                     
@@ -328,7 +297,7 @@ def main():
                 #Predict using the image link
                 elif image_bytes:
                     image = cache_image(image_byte = image_bytes)
-                    input_data = prepare_my_uint8(image)
+                    #input_data = prepare_my_uint8(image)
                 else:
                     st.error("Error")
                 # # Send our image to database for later analysis
@@ -350,21 +319,23 @@ def main():
                             t = time.time() - start
                             #time.sleep(8)
                         elif choose_model == "Model 3 (Colab)":
-                            
+                            label = getOutput(tflite_model, prepare_my(image), colab=True)
+                            t = time.time() - start
                             
                             #label=getOutput(tflite_colab,prepare_my(image,colab=True),colab=True)
-                            label = "Nothing here"
-                            t = time.time() - start
+                            #label = "Nothing here"
+                            #t = time.time() - start
                             
-                        elif choose_model == "Model 4 (Quantised Model)":
-                            label = "Nothing here"
-                            #label = getOutput(tflite_model_uint8, input_data)
-                            t = time.time() - start
-                            
-                        elif choose_model == "Model 5 (UnQuantised Model)":
-                            #input_data = prepare_my_uint8(image)
-                            label = getOutput(tflite_model, prepare_my(image),colab=True)
-                            t = time.time() - start
+                        #elif choose_model == "Model 4 (Quantised Model)":
+                        #    label = "Nothing here"
+                        #   #label = getOutput(tflite_model_uint8, input_data)
+                        #    t = time.time() - start
+                        #   
+                        #elif choose_model == "Model 5 (UnQuantised Model)":
+                        #    #input_data = prepare_my_uint8(image)
+                        #   label = getOutput(tflite_model, prepare_my(image),colab=True)
+                        #    t = time.time() - start
+                        
                         else:
                             #TODO 
                             label = "Not yet done"
