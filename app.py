@@ -131,9 +131,9 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     size = (img_shape, img_shape)
     
     # Maintain Aspect Ratio of images by adding padding of black bars
-    image = ImageOps.pad(image, size, Image.ANTIALIAS)
+    #image = ImageOps.pad(image, size, Image.ANTIALIAS)
     # Cut images to size by cropping into them
-    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    image = ImageOps.fit(image, size, Image.ANTIALIAS)
     
     #print(image.size)
     
