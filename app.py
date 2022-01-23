@@ -1,6 +1,6 @@
 from functools import cache
 import streamlit as st
-from streamlit_tensorboard import st_tensorboard
+#from streamlit_tensorboard import st_tensorboard
 import numpy as np
 import tensorflow as tf
 from PIL import Image, ImageOps
@@ -165,8 +165,8 @@ def main():
         model = call_efficient("enetd0")
         my_model = call_model("FinalTeachingModel")
         tflite_model = call_interpreter(model_path="FinalTeachingModel/model_unquant.tflite")
-        tflite_model_uint8 = call_interpreter(model_path="mymodel/teaching_quant.tflite")
-        tflite_colab = call_colab(model_path="mymodel/efficientlite0.tflite")
+        #tflite_model_uint8 = call_interpreter(model_path="mymodel/teaching_quant.tflite")
+        #tflite_colab = call_colab(model_path="mymodel/efficientlite0.tflite")
     
 
     #st.balloons()
@@ -352,11 +352,13 @@ def main():
                         elif choose_model == "Model 3 (Colab)":
                             
                             
-                            label=getOutput(tflite_colab,prepare_my(image,colab=True),colab=True)
+                            #label=getOutput(tflite_colab,prepare_my(image,colab=True),colab=True)
+                            label = "Nothing here"
                             t = time.time() - start
                             
                         elif choose_model == "Model 4 (Quantised Model)":
-                            label = getOutput(tflite_model_uint8, input_data)
+                            label = "Nothing here"
+                            #label = getOutput(tflite_model_uint8, input_data)
                             t = time.time() - start
                             
                         elif choose_model == "Model 5 (UnQuantised Model)":
