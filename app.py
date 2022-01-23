@@ -149,6 +149,7 @@ def main():
         image = None
         if sentence:
             try:
+<<<<<<< Updated upstream
                 response = requests.get(sentence)
                 image = Image.open(io.BytesIO(response.content))
                 image = response.content
@@ -157,6 +158,59 @@ def main():
                 st.error("Exception occured due to url not having image " + str(e))
                 image = None
                 #st.error()
+=======
+                uri = st.text_input('Enter Azure ML Inference URL here:')
+            except:
+                uri = ""
+        if uri:
+            st.write("Azure ML Inference URL: " + uri)
+        
+        #Expander 1.5
+        #QR code input but need to manually copy and paste into the above line to store the uri
+        my_expanders = st.expander(label="QR Code Input")
+        checking_list = ["http", "/score"]
+        
+        with my_expanders:
+            QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
+            qrCodeDetector = cv2.QRCodeDetector()
+            try:
+                if st.button("Altair") and QR_file:
+                    nparr = np.frombuffer(QR_file.read(), np.uint8)
+                    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                    decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
+                    decodedText = str(decodedText).strip()
+                    if all(x in decodedText for x in checking_list):
+                        uri = decodedText
+                        st.success("Azure ML Url is at: " + decodedText)
+                    else:
+                        st.error(f"URI of {decodedText} is not valid")
+            except Exception as e:
+                st.error("Failure" + str(e))
+                uri = ""
+
+        #Expander 2
+        #Changed from this
+        #sentence = st.text_input('Input your sentence here:')
+        # To this using an expander
+        my_expander = st.expander(label='Inference for images on the internet:')
+        image_bytes = None
+        with my_expander:
+            sentence = st.text_input('Input your image url here:') 
+            if sentence:
+                try:
+                    response = requests.get(sentence)
+                    # = Image.open(io.BytesIO(response.content))
+                    image_bytes = response.content
+                    #st.write(str(sentence))
+                except Exception as e:
+                    st.error("Exception occured due to url not having image " + str(e))
+                    image = None
+                    #st.error()
+                    
+
+
+        #Expander 3
+>>>>>>> Stashed changes
         # Option to upload an image file with jpg,jpeg or png extensions
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
