@@ -12,7 +12,7 @@ import copy
 import time
 import base64
 import json
-import cv2
+#import cv2
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
@@ -203,14 +203,15 @@ def main():
         
         #Expander 1.5
         #QR code input but need to manually copy and paste into the above line to store the uri
-        my_expanders = st.expander(label="QR Code Input")
+        #my_expanders = st.expander(label="QR Code Input")
         checking_list = ["http", "/score"]
+        """
         with my_expanders:
             QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
             qrCodeDetector = cv2.QRCodeDetector()
             try:
                 if st.button("Altair") and QR_file:
-                    nparr = np.fromstring(QR_file.read(), np.uint8)
+                    nparr = np.frombuffer(QR_file.read(), np.uint8)
                     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
                     decodedText = str(decodedText).strip()
@@ -222,7 +223,7 @@ def main():
             except Exception as e:
                 st.error("Failure" + str(e))
                 uri = ""
-
+        """
         #Expander 2
         #Changed from this
         #sentence = st.text_input('Input your sentence here:')
