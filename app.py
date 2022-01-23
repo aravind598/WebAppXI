@@ -201,6 +201,8 @@ def main():
         if uri:
             st.write("Azure ML Inference URL: " + uri)
         
+        #Expander 1.5
+        #QR code input but need to manually copy and paste into the above line to store the uri
         my_expanders = st.expander(label="QR Code Input")
         checking_list = ["http", "/score"]
         with my_expanders:
@@ -212,7 +214,6 @@ def main():
                     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
                     decodedText = str(decodedText).strip()
-                    print(decodedText)
                     if all(x in decodedText for x in checking_list):
                         uri = decodedText
                         st.success("Azure ML Url is at: " + decodedText)
@@ -227,14 +228,14 @@ def main():
         #sentence = st.text_input('Input your sentence here:')
         # To this using an expander
         my_expander = st.expander(label='Inference for images on the internet:')
-        image = None
+        image_bytes = None
         with my_expander:
             sentence = st.text_input('Input your image url here:') 
             if sentence:
                 try:
                     response = requests.get(sentence)
-                    image = Image.open(io.BytesIO(response.content))
-                    image = response.content
+                    # = Image.open(io.BytesIO(response.content))
+                    image_bytes = response.content
                     #st.write(str(sentence))
                 except Exception as e:
                     st.error("Exception occured due to url not having image " + str(e))
@@ -250,18 +251,21 @@ def main():
         #Copy images if not error
         uploaded_file1 = copy.copy(uploaded_file)
         uploaded_copy = copy.copy(uploaded_file)
-        image1 = copy.copy(image)
+        image1 = copy.copy(image_bytes)
         #picture1 = copy.copy(picture)
 
         jsonImage = None
         if uploaded_file is not None:
             upload = uploaded_file.read()
             jsonImage = cache_image(image_byte=upload, azure=True)
+        elif image_bytes is not None:
+            jsonImage = cache_image(image_byte=image1, azure=True)
+            
 
             
         if uploaded_file is not None:
             placeholder = st.image(uploaded_file1.read(),use_column_width=True)
-        elif image is not None:
+        elif image_bytes is not None:
             placeholder = st.image(image1,use_column_width=True)
         #elif picture is not None:
             #placeholder = st.image(picture1.read(),use_column_width=True)
@@ -274,7 +278,7 @@ def main():
                 if all(x in uri for x in checking_list):
                     #st.write(str(uriparts in uri for uriparts in checking_list))
                     if st.button("Azure ML Predict"):
-                            if uploaded_file is not None or image is not None:
+                            if uploaded_file is not None or image_bytes is not None:
                                 t = time.time()
                                 if jsonImage:
                                     headers = {"Content-Type": "application/json"}
@@ -308,7 +312,7 @@ def main():
         if st.button("Local Prediction"):
             start = time.time()
         # If the user uploads an image
-            if uploaded_file is not None or image is not None:
+            if uploaded_file is not None or image_bytes is not None:
                 
                 if uploaded_file:
                     # Opening our image
@@ -321,8 +325,8 @@ def main():
                     
                 
                 #Predict using the image link
-                elif image:
-                    image = cache_image(image_byte = image)
+                elif image_bytes:
+                    image = cache_image(image_byte = image_bytes)
                     input_data = prepare_my_uint8(image)
                 else:
                     st.error("Error")
