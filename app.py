@@ -28,6 +28,8 @@ uri = None
 sentence = None
 
 
+@st.experimental_singleton
+@cache
 def call_model(model_path):
     """[Call my model and the EfficientNet model]
 
@@ -43,13 +45,16 @@ def call_model(model_path):
     return model
 
 
+@st.experimental_singleton
+@cache
 def call_efficient(model_path):
     model = tf.keras.models.load_model(model_path)
     model.make_predict_function()
     #model.summary()
     return model
 
-
+@st.experimental_singleton
+@cache
 def call_interpreter(model_path):
     """[Call tflite interpreter]
 
@@ -161,7 +166,7 @@ def main():
     )
 
     with st.spinner("The magic of our AI is starting.... Please Wait"):
-        #model = call_efficient("enetd0")
+        model = call_efficient("enetd0")
         my_model = call_model("FinalTeachingModel")
         tflite_model = call_interpreter(model_path="FinalTeachingModel/model_unquant.tflite")
         #tflite_model_uint8 = call_interpreter(model_path="mymodel/teaching_quant.tflite")
