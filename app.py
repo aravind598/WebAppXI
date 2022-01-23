@@ -1,6 +1,6 @@
 from functools import cache
 import streamlit as st
-#from streamlit_tensorboard import st_tensorboard
+from streamlit_tensorboard import st_tensorboard
 import numpy as np
 import tensorflow as tf
 from PIL import Image, ImageOps
@@ -218,7 +218,7 @@ def main():
                     nparr = np.frombuffer(QR_file.read(), np.uint8)
                     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
-                    decodedText = str(decodedText).strip()
+                    #decodedText = str(decodedText).strip()
                     if all(x in decodedText for x in checking_list):
                         uri = decodedText
                         st.success("Azure ML Url is at: " + decodedText)
@@ -411,9 +411,9 @@ def main():
         # Let's set the title of our About page
         st.title('Tensorboard Stats of the Run')
         st.markdown('## Train')
-        #st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
+        st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
         st.markdown('## Validation')
-        #st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
+        st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
         # A function to display the company logo
         def display_logo(path):
             company_logo = Image.open(path)
