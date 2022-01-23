@@ -2,8 +2,6 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 import io
-from contextlib import contextmanager, redirect_stdout
-from io import StringIO
 
 
 def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
@@ -19,12 +17,13 @@ def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
     else:
         return img.numpy()
 
+"""
 def prediction(model, pred):
     prednumpyarray = model.predict(pred)
     print(prednumpyarray.shape)
     predarray = tf.keras.applications.efficientnet.decode_predictions(prednumpyarray, top=5)
     return predarray
-
+"""
 
 def prediction_my(model, pred):
     classes = ["Fruit", "Dog", "Person", "Car", "Motorbike", "Flower", "Cat"]
@@ -75,8 +74,15 @@ def make_prediction(model, image):
      pred_conf (model confidence)
     """
     image_array = prepare(image,expand_dims=True)
-    image_pred = prediction(model,image_array)
-    return str(image_pred)
+    #image_pred = prediction(model,image_array)
+    # run the inference
+    prediction = model.predict(image_array)
+    listing = tf.keras.applications.efficientnet.decode_predictions(
+        prediction, top=5
+    )
+    #print(classes[prediction.argmax()])
+    return str(listing)
+    #return str(image_pred)
 
 
 def make_my_prediction(my_model,image,colab=False):
@@ -89,11 +95,19 @@ def make_my_prediction(my_model,image,colab=False):
      pred_class (prediction class from class_names)
      pred_conf (model confidence)
     """
-    #my_model = tf.keras.models.load_model("mymodel")
     image_array = prepare_my(image)
-    image_pred = prediction_my(my_model,image_array,colab)
-    return str(image_pred)
+    #image_pred = prediction_my(my_model,image_array,colab)
+    classes = ["Car", "Cat", "Dog", "Flower", "Fruit", "Motorbike", "Person"]
+    if colab:
+        classes = ['Airplane', 'Bird', 'Car', 'Cat', "Dog",
+                   "Flower", "Fruit", "Motorcycle", "Person"]
+    # run the inference
+    prediction = my_model.predict(image_array)
+    #print(classes[prediction.argmax()])
+    return str(classes[prediction.argmax()])
+    #return str(image_pred)
 
+'''
 def prediction_my(model, pred, colab):
     """[Prediction using my model]
 
@@ -111,6 +125,7 @@ def prediction_my(model, pred, colab):
     prediction = model.predict(pred)
     #print(classes[prediction.argmax()])
     return classes[prediction.argmax()]
+'''
 
 def getOutput(interpreter, input_data, input_details=None, output_details=None, colab=False):
     """[Get output from interpreter using tflite models]
@@ -215,6 +230,7 @@ def prepare_my(bytestr, img_shape=224):
     return data
 """
 
+'''
 @contextmanager
 def st_capture(output_func):
     with StringIO() as stdout, redirect_stdout(stdout):
@@ -230,3 +246,4 @@ def st_capture(output_func):
 
 def createserver():
     pass
+'''

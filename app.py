@@ -12,6 +12,7 @@ import copy
 import time
 import base64
 import json
+import cv2
 #from img_classifier import our_image_classifier
 # import firebase_bro
 
