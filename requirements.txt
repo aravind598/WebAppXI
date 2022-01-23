@@ -3,3 +3,5 @@ tensorflow-cpu
 pillow
 numpy
 azureml-core
+opencv-python-headless
+streamlit-tensorboard
