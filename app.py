@@ -112,9 +112,9 @@ def call_interpreter(model_path):
 #  """
 
 
-#@st.experimental_memo
-#@st.cache
-#@cache
+@st.experimental_memo
+@st.cache
+@cache
 def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
@@ -152,7 +152,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     image = byteImgIO.read()
     return image
 
-#@cache
+@cache
 def main():
     """
     [Main function all the UI is here]
