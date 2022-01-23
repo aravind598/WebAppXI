@@ -156,7 +156,7 @@ def main():
     # Metadata for the web app
     st.set_page_config(
     page_title = "WebApp",
-    layout = "centered",
+    layout = "wide",
     page_icon= ":dog:",
     initial_sidebar_state = "collapsed",
     )
@@ -199,7 +199,7 @@ def main():
             except:
                 uri = ""
         if uri:
-            st.write("The current Inference URL for Azure ML is, " + uri)
+            st.write("Azure ML Inference URL: " + uri)
         
         my_expanders = st.expander(label="QR Code Input")
         checking_list = ["http", "/score"]
@@ -209,10 +209,11 @@ def main():
             try:
                 if st.button("Altair") and QR_file:
                     nparr = np.fromstring(QR_file.read(), np.uint8)
-                    print(nparr)
                     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
-                    if all(x in uri for x in checking_list):
+                    decodedText = str(decodedText).strip()
+                    print(decodedText)
+                    if all(x in decodedText for x in checking_list):
                         uri = decodedText
                         st.success("Azure ML Url is at: " + decodedText)
                     else:
@@ -266,7 +267,7 @@ def main():
             #placeholder = st.image(picture1.read(),use_column_width=True)
         else:
             pass
-        checking_list = ["http", "/score"]
+        
         #azpredictbut = st.button("Azure ML Predict")
         try:
             if uri:
@@ -298,6 +299,7 @@ def main():
                 pass
                 #st.error("URL is empty.")
         except Exception as e:
+            st.error('Service unavailable -> Is the Server Running?')
             st.error(str(e))
             
             
@@ -371,7 +373,10 @@ def main():
                     st.error("We apologize something went wrong 🙇🏽‍♂️")
             else:
                 st.error("Can you please upload an image 🙇🏽‍♂️")
-
+        
+        if st.button("Clear Screen"):
+            placeholder.empty()
+            
     elif choice == "Contact":
         # Let's set the title of our Contact Page
         st.title('Get in touch')
