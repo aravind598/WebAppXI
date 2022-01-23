@@ -405,9 +405,9 @@ def main():
         # Let's set the title of our About page
         st.title('Tensorboard Stats of the Run')
         st.markdown('## Train')
-        st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
+        #st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
         st.markdown('## Validation')
-        st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
+        #st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
         # A function to display the company logo
         def display_logo(path):
             company_logo = Image.open(path)
