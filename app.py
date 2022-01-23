@@ -219,11 +219,11 @@ def main():
                     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                     decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
                     #decodedText = str(decodedText).strip()
-                    if all(x in decodedText for x in checking_list):
-                        uri = decodedText
-                        st.success("Azure ML Url is at: " + decodedText)
-                    else:
-                        st.error(f"URI of {decodedText} is not valid")
+                    #if all(x in decodedText for x in checking_list):
+                    #    uri = decodedText
+                    st.success("Azure ML Url is at: " + decodedText)
+                    #else:
+                    #    st.error(f"URI of {decodedText} is not valid")
             except Exception as e:
                 st.error("Failure" + str(e))
                 uri = ""
