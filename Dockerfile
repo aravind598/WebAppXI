@@ -1,21 +1,16 @@
-FROM python:3.9
+# Nicked from: https://github.com/markdouthwaite/streamlit-project/blob/master/Dockerfile
+FROM python:3.9-slim
 
-RUN pip install --upgrade pip
+RUN pip install -U pip
 
-# Create working directory
+COPY requirements.txt app/requirements.txt
+RUN pip install -r app/requirements.txt
+
+# copy into a directory of its own (so it isn't in the toplevel dir)
+COPY . /app
 WORKDIR /app
 
-# Copy requirements. From source, to destination.
-COPY requirements.txt ./requirements.txt
-
-# Install dependencies
-RUN pip3 install -r requirements.txt
-
-# Expose port
+CMD ["python", "-m", "streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0"]
 EXPOSE 8080
 
-# copying all files over. From source, to destination.
-COPY . /app
 
-#Run app
-CMD streamlit run --server.port 8080 --server.enableCORS false app.py
