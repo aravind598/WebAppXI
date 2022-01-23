@@ -21,7 +21,9 @@ st.set_option('deprecation.showfileUploaderEncoding', False)
 global model; global my_model; global tflite_colab; global tflite_model_uint8; global tflite_model 
 global picture
 global uri
+global sentence
 uri = None
+sentence = None
 
 @st.experimental_singleton
 @cache
@@ -104,14 +106,6 @@ def prepare_my_uint8(bytestr, shape = (1,224,224,3) ):
     return np.uint8(data)
 
 
-def azure_prediction(jsonImage, uri):
-    url = uri.replace("/score", "")
-    requests.get(url)
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(uri, data=jsonImage, headers=headers)
-    print(response.json())
-    return response.json()
-
 
 @st.experimental_memo
 @st.cache
@@ -127,10 +121,21 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
         bytes: [return a new bytes object that is smaller/faster to interpret]
     """
     byteImgIO = io.BytesIO()
-    image = Image.open(io.BytesIO(image_byte)).convert('RGB')   
+    image = Image.open(io.BytesIO(image_byte)).convert('RGB')
+    #print(image.size)  
     size = (img_shape, img_shape)
-    image = ImageOps.fit(image, size, Image.ANTIALIAS)
-    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 70)
+    
+    # Maintain Aspect Ratio of images by adding padding of black bars
+    image = ImageOps.pad(image, size, Image.ANTIALIAS)
+    # Cut images to size by cropping into them
+    #image = ImageOps.fit(image, size, Image.ANTIALIAS)
+    
+    #print(image.size)
+    
+    #Lower the image size by decreasing its quality
+    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 80)
+   
+   #If the azure variable is True then dump the data as encoded utf-8 json for sending to the server 
     if azure:
         img_byte = byteImgIO.getvalue()  # bytes
         img_base64 = base64.b64encode(img_byte)  # Base64-encoded bytes * not str
@@ -151,19 +156,21 @@ def main():
     st.set_page_config(
     page_title = "WebApp",
     layout = "centered",
-    page_icon= "🧊",
+    page_icon= ":dog:",
     initial_sidebar_state = "collapsed",
     )
 
     with st.spinner("The magic of our AI is starting.... Please Wait"):
         model = call_efficient("enetd0")
-        my_model = call_model("mymodel")
-        tflite_model = call_interpreter(model_path="mymodel/teaching_unquant.tflite")
+        my_model = call_model("FinalTeachingModel")
+        tflite_model = call_interpreter(model_path="FinalTeachingModel/model_unquant.tflite")
         tflite_model_uint8 = call_interpreter(model_path="mymodel/teaching_quant.tflite")
         tflite_colab = call_colab(model_path="mymodel/efficientlite0.tflite")
     
 
     #st.balloons()
+    
+    #Sidebar selection
     choose_model = st.sidebar.selectbox(
     "Pick model you'd like to use",
     ("Model 1 (Custom Model)", # original 10 classes
@@ -175,8 +182,6 @@ def main():
     
     menu = ['Home', 'Stats', 'Contact', 'Feedback']
     choice = st.sidebar.selectbox("Menu", menu)
-    
-
         
 
     if choice == "Home":
@@ -192,48 +197,24 @@ def main():
                 pass
         st.write("The current Inference URL for Azure ML is, " + uri)
         
+        #Changed from this
         #sentence = st.text_input('Input your sentence here:')
-        sentence = st.text_input('Input your image url here:') 
+        # To this using an expander
+        my_expander = st.expander(label='Inference for images on the internet:')
         image = None
-        if sentence:
-            try:
-                response = requests.get(sentence)
-                image = Image.open(io.BytesIO(response.content))
-                image = response.content
-                #st.write(str(sentence))
-            except Exception as e:
-                st.error("Exception occured due to url not having image " + str(e))
-                image = None
-                #st.error()
-        
-        my_expander = st.expander(label='Camera Input')
         with my_expander:
-            #'Hello there!'
-            #clicked = st.button('Click me!')
-            #TODO
-            picture = st.camera_input("Take a picture")
-            if picture:
-                label = None
-                with st.empty():
-                    st.image(copy.copy(picture))
-                    single_image = picture.read()
-                    predict_but = st.button("Prediction")
-                    image = cache_image(image_byte = single_image)
-                    input_data = prepare_my_uint8(image)
-                    if predict_but:
-                        try:
-                            with st.spinner("The magic of our AI has started...."):
-                                #TODO
-                                pass
-                        
-                        #rating = st.slider("Do you mind rating our service?",1,10)
-                        except Exception as e:
-                            st.error(e)
-                            st.error(traceback.format_exc())
-                            st.error("We apologize something went wrong 🙇🏽‍♂️")
-                            
-                st.success("We predict this image to be: " + label)
-                
+            sentence = st.text_input('Input your image url here:') 
+            if sentence:
+                try:
+                    response = requests.get(sentence)
+                    image = Image.open(io.BytesIO(response.content))
+                    image = response.content
+                    #st.write(str(sentence))
+                except Exception as e:
+                    st.error("Exception occured due to url not having image " + str(e))
+                    image = None
+                    #st.error()
+        
 
 
                 
@@ -244,7 +225,7 @@ def main():
         uploaded_file1 = copy.copy(uploaded_file)
         uploaded_copy = copy.copy(uploaded_file)
         image1 = copy.copy(image)
-        picture1 = copy.copy(picture)
+        #picture1 = copy.copy(picture)
 
         jsonImage = None
         if uploaded_file is not None:
@@ -255,9 +236,9 @@ def main():
         if uploaded_file is not None:
             placeholder = st.image(uploaded_file1.read(),use_column_width=True)
         elif image is not None:
-            placeholder = st.image(image1.read(),use_column_width=True)
-        elif picture is not None:
-            placeholder = st.image(picture1.read(),use_column_width=True)
+            placeholder = st.image(image1,use_column_width=True)
+        #elif picture is not None:
+            #placeholder = st.image(picture1.read(),use_column_width=True)
         else:
             pass
         checking_list = ["http", "/score"]
@@ -328,7 +309,7 @@ def main():
                             #label = our_image_classifier(image)
                         if choose_model == "Model 1 (Custom Model)":
                             #model = call_model()
-                            label=make_my_prediction(my_model,image)
+                            label=make_my_prediction(my_model,image,colab=True)
                             t = time.time() - start
                         
                         elif choose_model == "Model 2 (EfficientNet)":

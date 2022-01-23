@@ -4,3 +4,4 @@ pillow
 numpy
 azureml-core
 streamlit-tensorboard
+opencv-python

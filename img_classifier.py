@@ -3,10 +3,7 @@ from PIL import Image
 import numpy as np
 import io
 from contextlib import contextmanager, redirect_stdout
-from io import StringIO, BytesIO
-import base64
-import requests
-import json
+from io import StringIO
 
 
 def prepare(bytestr, img_shape=224, rescale=False, expand_dims=False):
@@ -82,7 +79,7 @@ def make_prediction(model, image):
     return str(image_pred)
 
 
-def make_my_prediction(my_model,image):
+def make_my_prediction(my_model,image,colab=False):
     """
     Takes an image and uses model (a trained TensorFlow model) to make a
     prediction. Using My Model
@@ -94,10 +91,10 @@ def make_my_prediction(my_model,image):
     """
     #my_model = tf.keras.models.load_model("mymodel")
     image_array = prepare_my(image)
-    image_pred = prediction_my(my_model,image_array)
+    image_pred = prediction_my(my_model,image_array,colab)
     return str(image_pred)
 
-def prediction_my(model, pred):
+def prediction_my(model, pred, colab):
     """[Prediction using my model]
 
     Args:
@@ -108,6 +105,8 @@ def prediction_my(model, pred):
         [type]: [description]
     """
     classes = ["Car","Cat","Dog", "Flower", "Fruit", "Motorbike", "Person"]
+    if colab:
+        classes = ['Airplane', 'Bird', 'Car', 'Cat', "Dog", "Flower", "Fruit", "Motorcycle", "Person"]
     # run the inference
     prediction = model.predict(pred)
     #print(classes[prediction.argmax()])
