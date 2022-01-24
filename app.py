@@ -127,18 +127,21 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     """
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
-    for orientation in ExifTags.TAGS.keys():
-        if ExifTags.TAGS[orientation] == 'Orientation':
-            break
-
-    exif = image._getexif()
-    st.write(str(exif))
-    if exif[orientation] == 3:
-        image = image.rotate(180, expand=True)
-    elif exif[orientation] == 6:
-        image = image.rotate(270, expand=True)
-    elif exif[orientation] == 8:
-        image = image.rotate(90, expand=True)
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        
+        exif = image._getexif()
+        st.write(str(exif))
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except:
+        pass
 
     #print(image.size)  
     size = (img_shape, img_shape)
