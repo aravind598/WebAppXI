@@ -130,7 +130,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
     try:
         st.write(image.getexif())
-        ImageOps.exif_transpose(image)
+        image = ImageOps.exif_transpose(image)
     except:
         pass
     #print(image.size)  
