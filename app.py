@@ -3,7 +3,7 @@ import streamlit as st
 #from streamlit_tensorboard import st_tensorboard
 import numpy as np
 import tensorflow as tf
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ExifTags
 import io
 import requests
 from img_classifier import getOutput, prepare_my, make_my_prediction, make_prediction
@@ -125,15 +125,21 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     Returns:
         bytes: [return a new bytes object that is smaller/faster to interpret]
     """
-    import piexif
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
-    try:
-        exif_dict = piexif.load(image.info['exif'])
-        st.write(exif_dict)
-        print(exif_dict)
-    except:
-        pass
+    for orientation in ExifTags.TAGS.keys():
+        if ExifTags.TAGS[orientation] == 'Orientation':
+            break
+
+    exif = image._getexif()
+    st.write(str(exif))
+    if exif[orientation] == 3:
+        image = image.rotate(180, expand=True)
+    elif exif[orientation] == 6:
+        image = image.rotate(270, expand=True)
+    elif exif[orientation] == 8:
+        image = image.rotate(90, expand=True)
+
     #print(image.size)  
     size = (img_shape, img_shape)
     
