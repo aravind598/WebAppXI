@@ -138,7 +138,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     #print(image.size)
     
     #Lower the image size by decreasing its quality
-    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 80)
+    image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
    
    #If the azure variable is True then dump the data as encoded utf-8 json for sending to the server 
     if azure:
@@ -208,26 +208,29 @@ def main():
         #Expander 1.5
         #QR code input but need to manually copy and paste into the above line to store the uri
         #my_expanders = st.expander(label="QR Code Input")
+        
         checking_list = ["http", "/score"]
-        a = """
-        with my_expanders:
-            QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
-            qrCodeDetector = cv2.QRCodeDetector()
-            try:
-                if st.button("Altair") and QR_file:
-                    nparr = np.frombuffer(QR_file.read(), np.uint8)
-                    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                    decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
-                    decodedText = str(decodedText).strip()
-                    if all(x in decodedText for x in checking_list):
-                        uri = decodedText
-                        st.success("Azure ML Url is at: " + decodedText)
-                    else:
-                        st.error(f"URI of {decodedText} is not valid")
-            except Exception as e:
-                st.error("Failure" + str(e))
-                uri = ""
-        """
+        
+        # a = """
+        # with my_expanders:
+        #     QR_file = st.file_uploader("Input QR Code", type=["jpg", "png", "jpeg"])
+        #     qrCodeDetector = cv2.QRCodeDetector()
+        #     try:
+        #         if st.button("Altair") and QR_file:
+        #             nparr = np.frombuffer(QR_file.read(), np.uint8)
+        #             img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        #             decodedText, _ , _ = qrCodeDetector.detectAndDecode(img_np)
+        #             decodedText = str(decodedText).strip()
+        #             if all(x in decodedText for x in checking_list):
+        #                 uri = decodedText
+        #                 st.success("Azure ML Url is at: " + decodedText)
+        #             else:
+        #                 st.error(f"URI of {decodedText} is not valid")
+        #     except Exception as e:
+        #         st.error("Failure" + str(e))
+        #         uri = ""
+        # """
+        
         #Expander 2
         #Changed from this
         #sentence = st.text_input('Input your sentence here:')
@@ -375,6 +378,7 @@ def main():
                             #TODO 
                             label = "Not yet done"
                             t = time.time() - start
+                            
                     if placeholder:
                         placeholder.empty()
                     st.success("We predict this image to be: "+ label)
