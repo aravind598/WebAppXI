@@ -125,26 +125,13 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     Returns:
         bytes: [return a new bytes object that is smaller/faster to interpret]
     """
+    import piexif
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
     try:
-        exif_data = image._getexif()
-        st.write(exif_data)
-        for orientation in ExifTags.TAGS.keys():
-            if ExifTags.TAGS[orientation] == 'Orientation':
-                break
-        
-        exif = image._getexif()
-        st.write(str(exif))
-        if exif[orientation] == 3:
-            image = image.rotate(180, expand=True)
-        elif exif[orientation] == 6:
-            image = image.rotate(270, expand=True)
-        elif exif[orientation] == 8:
-            image = image.rotate(90, expand=True)
+        st.write(image.getexif())
     except:
         pass
-
     #print(image.size)  
     size = (img_shape, img_shape)
     
