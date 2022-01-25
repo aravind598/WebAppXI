@@ -125,7 +125,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     Returns:
         bytes: [return a new bytes object that is smaller/faster to interpret]
     """
-    import piexif
+    #import piexif
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
     try:
@@ -150,7 +150,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     if azure:
         img_byte = byteImgIO.getvalue()  # bytes
         img_base64 = base64.b64encode(img_byte)  # Base64-encoded bytes * not str
-        img_str = img_base64.decode('latin-1')  # str
+        img_str = img_base64.decode('utf-8')  # str
         data = {"inference": img_str}
         return bytes(json.dumps(data),encoding='utf-8')
     
@@ -295,9 +295,14 @@ def main():
                             if uploaded_file is not None or image_bytes is not None:
                                 t = time.time()
                                 if jsonImage:
+                                    
+                                    
+                                    
+                                    #Azure ML######################################################################################################################################################
                                     headers = {"Content-Type": "application/json"}
                                     #response = requests.post(uri, data=jsonImage, headers=headers)
                                     
+                                    #Flask Colab###################################################################################################################################################
                                     headers = {
                                         'Content-type': 'application/json', 'Accept': 'text/plain'}
                                     response = requests.post(
