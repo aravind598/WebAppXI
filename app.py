@@ -299,7 +299,7 @@ def main():
                                     #response = requests.post(uri, data=jsonImage, headers=headers)
                                     
                                     response = requests.post(uri+"/predict",
-                                                         data=jsonImage})
+                                                         data=jsonImage)
 
                                     
                                     label = str(response.text)
