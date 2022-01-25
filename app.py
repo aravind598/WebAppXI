@@ -298,8 +298,11 @@ def main():
                                     headers = {"Content-Type": "application/json"}
                                     #response = requests.post(uri, data=jsonImage, headers=headers)
                                     
-                                    response = requests.post(uri+"/predict",
-                                                         data=jsonImage)
+                                    headers = {
+                                        'Content-type': 'application/json', 'Accept': 'text/plain'}
+                                    response = requests.post(
+                                        uri, data=jsonImage, headers=headers)
+                                    
 
                                     
                                     label = str(response.text)
