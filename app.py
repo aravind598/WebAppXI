@@ -194,7 +194,8 @@ def main():
     menu = ['Home', 'Stats', 'Contact', 'Feedback']
     choice = st.sidebar.selectbox("Menu", menu)
         
-
+    button_string = ""
+    Flasking = False
     if choice == "Home":
         # Let's set the title of our awesome web app
         st.title("Aravind's Application")
@@ -205,11 +206,17 @@ def main():
         my_expandering = st.expander(label='Model URL Input')
         with my_expandering:
             try:
-                uri = st.text_input('Enter Azure ML Inference URL here:')
+                uri = st.text_input('Enter Azure ML/Flask Inference URL here:')
             except:
                 uri = ""
         if uri:
-            st.write("Azure ML Inference URL: " + uri)
+            if 'grok' in uri:
+                st.write("Flask Inference URL: " + uri)
+                Flasking = True
+                button_string = "Flask ML Predict"
+            else:
+                st.write("Azure ML Inference URL: " + uri)
+                button_string = "Azure ML Predict"
         
         #Expander 1.5
         #QR code input but need to manually copy and paste into the above line to store the uri
@@ -291,26 +298,27 @@ def main():
             if uri:
                 if all(x in uri for x in checking_list):
                     #st.write(str(uriparts in uri for uriparts in checking_list))
-                    if st.button("Azure ML Predict"):
+                    if st.button(button_string):
                             if uploaded_file is not None or image_bytes is not None:
                                 t = time.time()
                                 if jsonImage:
                                     
-                                    
-                                    
-                                    #Azure ML######################################################################################################################################################
-                                    headers = {"Content-Type": "application/json"}
-                                    #response = requests.post(uri, data=jsonImage, headers=headers)
-                                    
-                                    #Flask Colab###################################################################################################################################################
-                                    headers = {
-                                        'Content-type': 'application/json', 'Accept': 'text/plain'}
-                                    response = requests.post(
-                                        uri + '/predict', data=jsonImage, headers=headers)
+                                    if not Flasking:
+                                    ####Azure ML######################################################################################################################################################
+                                        headers = {"Content-Type": "application/json"}
+                                        response = requests.post(uri, data=jsonImage, headers=headers)
+                                        label = str(response.text)
+                                    else:
+                                    #####Flask Colab###################################################################################################################################################
+                                        headers = {
+                                            'Content-type': 'application/json', 'Accept': 'text/plain'}
+                                        response = requests.post(
+                                            uri + '/predict', data=jsonImage, headers=headers)
+                                        label = str(response.text)
                                     
 
                                     
-                                    label = str(response.text)
+                                    
                                     #label = azure_prediction(jsonImage, uri)
                                 else:
                                     label = "error"
