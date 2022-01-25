@@ -301,7 +301,7 @@ def main():
                                     headers = {
                                         'Content-type': 'application/json', 'Accept': 'text/plain'}
                                     response = requests.post(
-                                        uri, data=jsonImage, headers=headers)
+                                        uri + '/predict', data=jsonImage, headers=headers)
                                     
 
                                     
