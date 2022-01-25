@@ -296,7 +296,12 @@ def main():
                                 t = time.time()
                                 if jsonImage:
                                     headers = {"Content-Type": "application/json"}
-                                    response = requests.post(uri, data=jsonImage, headers=headers)
+                                    #response = requests.post(uri, data=jsonImage, headers=headers)
+                                    
+                                    response = requests.post(uri+"/predict",
+                                                         files={"file": open(r"C:\Users\Aravind\OneDrive - Nanyang Technological University\CZ4171\2007_000027_jpg.rf.f198388eb768f32a89be553841611d3a.jpg", 'rb')})
+
+                                    
                                     label = str(response.text)
                                     #label = azure_prediction(jsonImage, uri)
                                 else:
