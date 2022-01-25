@@ -129,7 +129,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
     try:
-        st.write(image.getexif())
+        #st.write(image.getexif())
         image = ImageOps.exif_transpose(image)
     except:
         pass
@@ -215,7 +215,7 @@ def main():
         #QR code input but need to manually copy and paste into the above line to store the uri
         #my_expanders = st.expander(label="QR Code Input")
         
-        checking_list = ["http", "/score"]
+        checking_list = ["http"]
         
         # a = """
         # with my_expanders:
