@@ -305,7 +305,8 @@ def main():
                     if st.button(button_strings):
                         if uploaded_file is not None or image_bytes is not None:
                             if uploaded_file is not None:
-                                upload = uploaded_file.read()
+                                singal = copy.copy(uploaded_file)
+                                upload = singal.read()
                                 jsonImage = cache_image(image_byte=upload, azure=True,camera=True)
                             elif image_bytes is not None:
                                 jsonImage = cache_image(image_byte=image1, azure=True)
