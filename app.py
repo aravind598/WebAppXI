@@ -302,8 +302,13 @@ def main():
             if uri:
                 if all(x in uri for x in checking_list):
                     #st.write(str(uriparts in uri for uriparts in checking_list))
-                    if st.button(button_string):
+                    if st.button(button_strings):
                         if uploaded_file is not None or image_bytes is not None:
+                            if uploaded_file is not None:
+                                upload = uploaded_file.read()
+                                jsonImage = cache_image(image_byte=upload, azure=True,resize=True)
+                            elif image_bytes is not None:
+                                jsonImage = cache_image(image_byte=image1, azure=True,resize=True)
                             t = time.time()
                             if jsonImage:
                                 
@@ -351,7 +356,7 @@ def main():
             if uri:
                 if all(x in uri for x in checking_list):
                     #st.write(str(uriparts in uri for uriparts in checking_list))
-                    if st.button(button_strings):
+                    if st.button(button_string):
                         if uploaded_file is not None or image_bytes is not None:
                                 t = time.time()
                                 if jsonImage:
