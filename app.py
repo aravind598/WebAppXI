@@ -289,35 +289,28 @@ def main():
         #picture1 = copy.copy(picture)
 
         jsonImage = None
-        count = 0
         if uploaded_file is not None:
             upload = uploaded_file.read()
+            image_bytes = uploaded_file1.read()
             if st.button("Camera"):
                 jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
-                count += 1
-            else:   
-                jsonImage = cache_image(image_byte=upload, azure=True)
-        elif image_bytes is not None:
-            jsonImage = cache_image(image_byte=image1, azure=True)
-            
-
-            
-        if uploaded_file is not None:
-            image_bytes = uploaded_file1.read()
-            if count > 0:
                 modified_image_byte = cache_image(image_byte=image_bytes, camera=True)
                 #modified_image_byte.seek(0)
                 placeholder = st.image(modified_image_byte, use_column_width=True)
-            else:
-                modified_image_byte = cache_image(image_byte=image_bytes, camera=False)
+            else:   
+                jsonImage = cache_image(image_byte=upload, azure=True)
+                modified_image_byte = cache_image(
+                    image_byte=image_bytes, camera=False)
                 #modified_image_byte.seek(0)
-                placeholder = st.image(modified_image_byte, use_column_width=True)
+                placeholder = st.image(
+                    modified_image_byte, use_column_width=True)
         elif image_bytes is not None:
-            placeholder = st.image(image1,use_column_width=True)
-        #elif picture is not None:
-            #placeholder = st.image(picture1.read(),use_column_width=True)
+            jsonImage = cache_image(image_byte=image1, azure=True)
+            placeholder = st.image(image1, use_column_width=True)
+        
         else:
-            pass
+            st.error("Error")
+
         
         
         
