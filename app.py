@@ -291,7 +291,8 @@ def main():
         jsonImage = None
         camera = None
         if uploaded_file is not None:
-            upload = uploaded_file.read()
+            f = copy.copy(uploaded_file)
+            upload = f.read()
             image_bytes = uploaded_file1.read()
             if st.button("Reshift"):
                 jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
@@ -328,7 +329,10 @@ def main():
                             if uploaded_file is not None or image_bytes is not None:
                                 t = time.time()
                                 if jsonImage:
-                                    
+                                    if st.button("HI"):
+                                        f = copy.copy(uploaded_file)
+                                        upload = f.read()
+                                        jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
                                     if not Flasking:
                                     ####Azure ML######################################################################################################################################################
                                         headers = {"Content-Type": "application/json"}
