@@ -128,6 +128,8 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
+    exifdata = image.getexif()
+    st.write(exifdata)
     
     #Get Rid of EXIF annotations
     try:
