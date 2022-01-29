@@ -125,14 +125,17 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     Returns:
         bytes: [return a new bytes object that is smaller/faster to interpret]
     """
-    #import piexif
+    
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
+    
+    #Get Rid of EXIF annotations
     try:
-        #st.write(image.getexif())
-        image = ImageOps.exif_transpose(image)
+        data = list(image.getdata())
+        image = Image.new(image.mode, image.size)
+        image.putdata(data)
     except:
-        pass
+        print("HI")
     #print(image.size)  
     size = (img_shape, img_shape)
     
