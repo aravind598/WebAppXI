@@ -303,10 +303,14 @@ def main():
 
             
         if uploaded_file is not None:
+            image_bytes = uploaded_file1.read()
             if count > 0:
-                placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera=True), use_column_width=True)
-            else:   
-                placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera = False), use_column_width=True)
+                modified_image_byte = cache_image(image_byte=image_bytes, azure=True, camera=True)
+                placeholder = st.image(
+                    modified_image_byte, use_column_width=True)
+            else:
+                modified_image_byte = cache_image(image_byte=image_bytes, azure=True, camera=False)
+                placeholder = st.image(modified_image_byte, use_column_width=True)
         elif image_bytes is not None:
             placeholder = st.image(image1,use_column_width=True)
         #elif picture is not None:
