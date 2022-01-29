@@ -128,16 +128,16 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     
     byteImgIO = io.BytesIO()
     image = Image.open(io.BytesIO(image_byte)).convert('RGB')
-    exifdata = image.getexif()
-    st.write(exifdata)
+    # exifdata = image.getexif()
+    # st.write(exifdata)
     
     #Get Rid of EXIF annotations
-    try:
-        data = list(image.getdata())
-        image = Image.new(image.mode, image.size)
-        image.putdata(data)
-    except:
-        print("HI")
+    # try:
+    #     data = list(image.getdata())
+    #     image = Image.new(image.mode, image.size)
+    #     image.putdata(data)
+    # except:
+    #     print("HI")
     #print(image.size)  
     size = (img_shape, img_shape)
     
@@ -298,6 +298,7 @@ def main():
         else:
             pass
         
+        #Prediction by ML
         #azpredictbut = st.button("Azure ML Predict")
         try:
             if uri:
