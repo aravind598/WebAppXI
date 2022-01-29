@@ -344,7 +344,7 @@ def main():
             
 
         # When the user clicks the predict button
-        if st.button("Local Prediction"):
+        if st.button("Local Prediction Resize"):
             start = time.time()
         # If the user uploads an image
             if uploaded_file is not None or image_bytes is not None:
@@ -353,7 +353,7 @@ def main():
                     # Opening our image
                     #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
                     single_image = uploaded_copy.read()
-                    image = cache_image(image_byte = single_image)
+                    image = cache_image(image_byte = single_image, camera = True)
                     #input_data = prepare_my_uint8(image)
                     #print(type(image))
                     #image = Image.open(uploaded_file
@@ -420,6 +420,86 @@ def main():
         
         if st.button("Clear Screen"):
             placeholder.empty()
+        
+        
+        if st.button("Local Prediction"):
+            start = time.time()
+        # If the user uploads an image
+            if uploaded_file is not None or image_bytes is not None:
+
+                if uploaded_file:
+                    # Opening our image
+                    #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
+                    single_image = uploaded_copy.read()
+                    image = cache_image(image_byte=single_image)
+                    #input_data = prepare_my_uint8(image)
+                    #print(type(image))
+                    #image = Image.open(uploaded_file
+
+                #Predict using the image link
+                elif image_bytes:
+                    image = cache_image(image_byte=image_bytes)
+                    #input_data = prepare_my_uint8(image)
+                else:
+                    st.error("Error")
+                # # Send our image to database for later analysis
+                # firebase_bro.send_img(image)
+                # Let's see what we got
+                st.image(image, use_column_width=True)
+                st.write("")
+                try:
+                    with st.spinner("The magic of our AI has started...."):
+                        #label = our_image_classifier(image)
+                        if choose_model == "Model 1 (Custom Model)":
+                            #model = call_model()
+                            label = make_my_prediction(
+                                my_model, image, colab=True)
+                            t = time.time() - start
+
+                        elif choose_model == "Model 2 (EfficientNet)":
+                            #my_model = call_my_model()
+                            label = make_prediction(model, image)
+                            t = time.time() - start
+                            #time.sleep(8)
+                        elif choose_model == "Model 3 (Colab)":
+                            label = getOutput(
+                                tflite_model, prepare_my(image), colab=True)
+                            t = time.time() - start
+
+                            #label=getOutput(tflite_colab,prepare_my(image,colab=True),colab=True)
+                            #label = "Nothing here"
+                            #t = time.time() - start
+
+                        #elif choose_model == "Model 4 (Quantised Model)":
+                        #    label = "Nothing here"
+                        #   #label = getOutput(tflite_model_uint8, input_data)
+                        #    t = time.time() - start
+                        #
+                        #elif choose_model == "Model 5 (UnQuantised Model)":
+                        #    #input_data = prepare_my_uint8(image)
+                        #   label = getOutput(tflite_model, prepare_my(image),colab=True)
+                        #    t = time.time() - start
+
+                        else:
+                            #TODO
+                            label = "Not yet done"
+                            t = time.time() - start
+
+                    if placeholder:
+                        placeholder.empty()
+                    st.success("We predict this image to be: " + label)
+                    st.success("Time Taken " + str(t))
+                    #rating = st.slider("Do you mind rating our service?",1,10)
+                except Exception as e:
+                    st.error(e)
+                    st.error(traceback.format_exc())
+                    st.error("We apologize something went wrong 🙇🏽‍♂️")
+            else:
+                st.error("Can you please upload an image 🙇🏽‍♂️")
+
+        if st.button("Clear Screen"):
+            placeholder.empty()
+            
             
     elif choice == "Contact":
         # Let's set the title of our Contact Page
