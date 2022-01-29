@@ -291,10 +291,12 @@ def main():
         #picture1 = copy.copy(picture)
 
         jsonImage = None
+        count = 0
         if uploaded_file is not None:
             upload = uploaded_file.read()
             if st.button("Camera"):
                 jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
+                count += 1
             else:   
                 jsonImage = cache_image(image_byte=upload, azure=True)
         elif image_bytes is not None:
@@ -303,7 +305,7 @@ def main():
 
             
         if uploaded_file is not None:
-            if st.button("Camera"):
+            if count > 0:
                 placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera=True, rets = True).read(), use_column_width=True)
             else:   
                 st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera = False, rets = True).read(), use_column_width=True)
