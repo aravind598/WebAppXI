@@ -349,8 +349,7 @@ def main():
         # If the user uploads an image
             if uploaded_file is not None or image_bytes is not None:
                 
-                if uploaded_file and st.button("HI"):
-                    
+                if uploaded_file:
                     # Opening our image
                     #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
                     single_image = uploaded_copy.read()
