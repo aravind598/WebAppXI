@@ -306,7 +306,7 @@ def main():
             if count > 0:
                 placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera=True), use_column_width=True)
             else:   
-                st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera = False), use_column_width=True)
+                placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera = False), use_column_width=True)
         elif image_bytes is not None:
             placeholder = st.image(image1,use_column_width=True)
         #elif picture is not None:
