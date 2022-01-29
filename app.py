@@ -115,7 +115,7 @@ def call_interpreter(model_path):
 @st.experimental_memo
 @st.cache
 @cache
-def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes:
+def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera = False, rets = False) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
     Args:
@@ -148,10 +148,18 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     
     #print(image.size)
     
+    if camera:
+        image = image.rotate(270)
+    
     #Lower the image size by decreasing its quality
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
-   
-   #If the azure variable is True then dump the data as encoded utf-8 json for sending to the server 
+    
+    if rets:
+        return byteImgIO
+
+
+    
+    #If the azure variable is True then dump the data as encoded utf-8 json for sending to the server 
     if azure:
         img_byte = byteImgIO.getvalue()  # bytes
         img_base64 = base64.b64encode(img_byte)  # Base64-encoded bytes * not str
@@ -162,6 +170,8 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     byteImgIO.seek(0)
     image = byteImgIO.read()
     return image
+
+
 
 @cache
 def main():
@@ -283,20 +293,28 @@ def main():
         jsonImage = None
         if uploaded_file is not None:
             upload = uploaded_file.read()
-            jsonImage = cache_image(image_byte=upload, azure=True)
+            if st.button("Camera"):
+                jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
+            else:   
+                jsonImage = cache_image(image_byte=upload, azure=True)
         elif image_bytes is not None:
             jsonImage = cache_image(image_byte=image1, azure=True)
             
 
             
         if uploaded_file is not None:
-            placeholder = st.image(uploaded_file1.read(),use_column_width=True)
+            if st.button("Camera"):
+                placeholder = st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera=True, rets = True).read(), use_column_width=True)
+            else:   
+                st.image(cache_image(image_byte=uploaded_file1.read(), azure=True, camera = False, rets = True).read(), use_column_width=True)
         elif image_bytes is not None:
             placeholder = st.image(image1,use_column_width=True)
         #elif picture is not None:
             #placeholder = st.image(picture1.read(),use_column_width=True)
         else:
             pass
+        
+        
         
         #Prediction by ML
         #azpredictbut = st.button("Azure ML Predict")
