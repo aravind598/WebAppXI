@@ -418,6 +418,8 @@ def main():
                         st.error(e)
                         st.error(traceback.format_exc())
                         st.error("We apologize something went wrong 🙇🏽‍♂️")
+                else:
+                    pass
             else:
                 st.error("Can you please upload an image 🙇🏽‍♂️")
         
