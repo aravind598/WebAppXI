@@ -306,11 +306,11 @@ def main():
             image_bytes = uploaded_file1.read()
             if count > 0:
                 modified_image_byte = cache_image(image_byte=image_bytes, camera=True)
-                modified_image_byte.seek(0)
+                #modified_image_byte.seek(0)
                 placeholder = st.image(modified_image_byte, use_column_width=True)
             else:
                 modified_image_byte = cache_image(image_byte=image_bytes, camera=False)
-                modified_image_byte.seek(0)
+                #modified_image_byte.seek(0)
                 placeholder = st.image(modified_image_byte, use_column_width=True)
         elif image_bytes is not None:
             placeholder = st.image(image1,use_column_width=True)
