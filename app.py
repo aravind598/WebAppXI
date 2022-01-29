@@ -149,7 +149,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera =
     #print(image.size)
     
     if camera:
-        image = image.rotate(270)
+        image = image.rotate(90)
     
     #Lower the image size by decreasing its quality
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
@@ -293,7 +293,7 @@ def main():
         if uploaded_file is not None:
             upload = uploaded_file.read()
             image_bytes = uploaded_file1.read()
-            if st.button("Camera"):
+            if st.button("Reshift"):
                 jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
                 modified_image_byte = cache_image(image_byte=image_bytes, camera=True)
                 #modified_image_byte.seek(0)
