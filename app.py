@@ -350,7 +350,7 @@ def main():
             if uploaded_file is not None or image_bytes is not None:
                 
                 
-                if st.button("No resize"):
+                
                 
                 if uploaded_file:
                     # Opening our image
