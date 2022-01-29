@@ -289,6 +289,7 @@ def main():
         #picture1 = copy.copy(picture)
         modified_image_byte = None
         jsonImage = None
+        camera = None
         if uploaded_file is not None:
             upload = uploaded_file.read()
             image_bytes = uploaded_file1.read()
@@ -297,6 +298,7 @@ def main():
                 modified_image_byte = cache_image(image_byte=image_bytes, camera=True)
                 #modified_image_byte.seek(0)
                 placeholder = st.image(modified_image_byte, use_column_width=True)
+                camera = True
             else:   
                 jsonImage = cache_image(image_byte=upload, azure=True)
                 modified_image_byte = cache_image(
@@ -375,7 +377,10 @@ def main():
                     # Opening our image
                     #placeholder = st.image(copy.copy(uploaded_file).read(),use_column_width=True)
                     single_image = uploaded_copy.read()
-                    image = cache_image(image_byte = single_image)
+                    if camera == True:
+                        image = cache_image(image_byte=single_image, camera = True)
+                    else:
+                        image = cache_image(image_byte = single_image)
                     #input_data = prepare_my_uint8(image)
                     #print(type(image))
                     #image = Image.open(uploaded_file
