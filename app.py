@@ -149,6 +149,8 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera =
     #Lower the image size by decreasing its quality
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
    
+   
+   
    #If the azure variable is True then dump the data as encoded utf-8 json for sending to the server 
     if azure:
         img_byte = byteImgIO.getvalue()  # bytes
@@ -304,10 +306,11 @@ def main():
                     #st.write(str(uriparts in uri for uriparts in checking_list))
                     if st.button(button_strings):
                         if uploaded_file is not None or image_bytes is not None:
+                            jsonImage = None
                             if uploaded_file is not None:
                                 singal = copy.copy(uploaded_file)
                                 upload = singal.read()
-                                jsonImage = cache_image(image_byte=upload, azure=True,camera=True)
+                                jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
                             elif image_bytes is not None:
                                 jsonImage = cache_image(image_byte=image1, azure=True)
                             t = time.time()
