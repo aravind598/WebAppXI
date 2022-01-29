@@ -418,9 +418,7 @@ def main():
             else:
                 st.error("Can you please upload an image 🙇🏽‍♂️")
         
-        if st.button("Clear Screen"):
-            placeholder.empty()
-        
+
         
         if st.button("Local Prediction"):
             start = time.time()
