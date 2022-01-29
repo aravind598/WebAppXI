@@ -115,7 +115,7 @@ def call_interpreter(model_path):
 @st.experimental_memo
 @st.cache
 @cache
-def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera = False) -> bytes:
+def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera = False, label = None) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
     Args:
@@ -156,8 +156,14 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera =
         img_byte = byteImgIO.getvalue()  # bytes
         img_base64 = base64.b64encode(img_byte)  # Base64-encoded bytes * not str
         img_str = img_base64.decode('utf-8')  # str
+        
+        if label:
+            data = {"inference": img_str, "label": str(label)}
+            return bytes(json.dumps(data), encoding='utf-8')
+            
         data = {"inference": img_str}
         return bytes(json.dumps(data),encoding='utf-8')
+    
     
     byteImgIO.seek(0)
     image = byteImgIO.read()
@@ -196,9 +202,11 @@ def main():
          #"Model 5 (UnQuantised Model)")  11 classes (same as above) + not_food class
     #)
     
-    menu = ['Home', 'Stats', 'Contact', 'Feedback']
-    choice = st.sidebar.selectbox("Menu", menu)
-        
+    #menu = ['Home', 'Stats', 'Contact', 'Feedback']
+    menu = ['Home', 'Train', 'Contact', 'Feedback']
+    #choice = st.sidebar.selectbox("Menu", menu)
+    choice = st.sidebar.selectbox("Directory", menu)
+    
     button_string = ""
     Flasking = False
     if choice == "Home":
@@ -581,24 +589,70 @@ def main():
 
         display_team("Your Awesome Name", "./assets/profile_pic.png","Your Awesome Affliation","hello@youareawesome.com")
 
-    elif choice == "Stats":
-        # Let's set the title of our About page
-        st.title('Tensorboard Stats of the Run')
-        st.markdown('## Train')
-        #st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
-        st.markdown('## Validation')
-        #st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
-        # A function to display the company logo
-        def display_logo(path):
-            company_logo = Image.open(path)
-            st.image(company_logo, width=350, use_column_width=False)
+    elif choice == "Train":
+        
+        training_label = None
+        #Expander 1
+        my_expandering = st.expander(label='Model URL Input')
+        with my_expandering:
+            try:
+                uri = st.text_input('Enter Azure ML/Flask Train URL here:')
+            except:
+                uri = ""
+                
+        training_image = st.file_uploader("Please upload your Training image here", type = ['jpeg','jpg','png'], accept_multiple_files = False)
+        
+        jsonImage = None
+        if training_image is not None:
+            placeholder = st.empty()
+            placeholder.image(training_image)
+            training_label = st.selectbox(label = "What Class is this Image From?", options = ["Airplane", "Bird", "Car", "Cat", "Dog", "Flower", "Fruit", "Motorcycle", "Person"])
+            st.write("The label for this picture is" + f" {training_label}")
+            if uri:
+                if 'grok' in uri:
+                    uri += "/trains"
+                    st.write("Flask Training URL: " + uri)
+                    button_string = "Flask ML Training"
+                    button_strings = "Flask ML Training Resize"
+                    flasky = st.button(button_string)
+                    flasky_res = st.button(button_strings)
+        
+                    train_bytes = training_image.read()
+                    if training_image is not None and training_label is not None:
+                        if flasky:
+                            jsonImage = cache_image(image_byte=train_bytes, azure=True, label = training_label )
+                        if flasky_res:
+                            jsonImage = cache_image(image_byte=train_bytes, azure=True, camera=True, label= training_label)
+                        
+                        if jsonImage:
+                            headers = {"Content-Type": "application/json"}
+                            response = requests.post(uri, data=jsonImage, headers=headers)
+                            label = str(response.text)
+                            st.write(label)
+                   
+        # elif image_bytes is not None:
+        #     jsonImage = cache_image(image_byte=image1, azure=True)
 
-        # Add the necessary info
-        display_logo("./assets/profile_pic.png")
-        st.markdown('## Objective')
-        st.markdown("Write your company's objective here.")
-        st.markdown('## More about the company.')
-        st.markdown("Write more about your country here.")
+        
+        
+    # #elif choice == "Stats":
+    #     # Let's set the title of our About page
+    #     st.title('Tensorboard Stats of the Run')
+    #     st.markdown('## Train')
+    #     #st_tensorboard(logdir= "logs/train/", port=5011, width=1080)
+    #     st.markdown('## Validation')
+    #     #st_tensorboard(logdir= "logs/validation/", port=5011, width=1080)
+    #     # A function to display the company logo
+    #     def display_logo(path):
+    #         company_logo = Image.open(path)
+    #         st.image(company_logo, width=350, use_column_width=False)
+
+    #     # Add the necessary info
+    #     display_logo("./assets/profile_pic.png")
+    #     st.markdown('## Objective')
+    #     st.markdown("Write your company's objective here.")
+    #     st.markdown('## More about the company.')
+    #     st.markdown("Write more about your country here.")
 
     elif choice == "Feedback":
         # Let's set the feedback page complete with a form
