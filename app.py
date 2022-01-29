@@ -287,7 +287,7 @@ def main():
         uploaded_copy = copy.copy(uploaded_file)
         image1 = copy.copy(image_bytes)
         #picture1 = copy.copy(picture)
-
+        modified_image_byte = None
         jsonImage = None
         if uploaded_file is not None:
             upload = uploaded_file.read()
@@ -390,7 +390,7 @@ def main():
                 # # Send our image to database for later analysis
                 # firebase_bro.send_img(image)
                 # Let's see what we got
-                st.image(image,use_column_width=True)
+                st.image(modified_image_byte, use_column_width=True)
                 st.write("")
                 try:
                     with st.spinner("The magic of our AI has started...."):
