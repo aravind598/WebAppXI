@@ -276,6 +276,7 @@ def main():
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg","png","jpeg"])
         
         #Copy images if not error
+        upz = copy.copy(uploaded_file)
         uploaded_file1 = copy.copy(uploaded_file)
         uploaded_copy = copy.copy(uploaded_file)
         image1 = copy.copy(image_bytes)
@@ -308,8 +309,7 @@ def main():
                         if uploaded_file is not None or image_bytes is not None:
                             jsonImage = None
                             if uploaded_file is not None:
-                                singal = copy.copy(uploaded_file)
-                                upload = singal.read()
+                                upload = upz.read()
                                 jsonImage = cache_image(image_byte=upload, azure=True, camera=True)
                             elif image_bytes is not None:
                                 jsonImage = cache_image(image_byte=image1, azure=True)
