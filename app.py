@@ -217,10 +217,11 @@ def main():
                 st.write("Flask Inference URL: " + uri)
                 Flasking = True
                 button_string = "Flask ML Predict"
+                button_strings = "Flask ML Predict Resize"
             else:
                 st.write("Azure ML Inference URL: " + uri)
                 button_string = "Azure ML Predict"
-        
+                button_strings = "Azure ML Predict Resize"
         #Expander 1.5
         #QR code input but need to manually copy and paste into the above line to store the uri
         #my_expanders = st.expander(label="QR Code Input")
@@ -302,36 +303,36 @@ def main():
                 if all(x in uri for x in checking_list):
                     #st.write(str(uriparts in uri for uriparts in checking_list))
                     if st.button(button_string):
-                            if uploaded_file is not None or image_bytes is not None:
-                                t = time.time()
-                                if jsonImage:
-                                    
-                                    if not Flasking:
-                                    ####Azure ML######################################################################################################################################################
-                                        headers = {"Content-Type": "application/json"}
-                                        response = requests.post(uri, data=jsonImage, headers=headers)
-                                        label = str(response.text)
-                                    else:
-                                    #####Flask Colab###################################################################################################################################################
-                                        headers = {
-                                            'Content-type': 'application/json', 'Accept': 'text/plain'}
-                                        response = requests.post(
-                                            uri + '/predict', data=jsonImage, headers=headers)
-                                        label = str(response.text)
-                                    
-
-                                    
-                                    
-                                    #label = azure_prediction(jsonImage, uri)
+                        if uploaded_file is not None or image_bytes is not None:
+                            t = time.time()
+                            if jsonImage:
+                                
+                                if not Flasking:
+                                ####Azure ML######################################################################################################################################################
+                                    headers = {"Content-Type": "application/json"}
+                                    response = requests.post(uri, data=jsonImage, headers=headers)
+                                    label = str(response.text)
                                 else:
-                                    label = "error"
-                                    st.error("JsonImage error")
-                                    
-                                st.success(label)
-                                st.success("Time taken is : " + str(time.time()- t))
-                            
+                                #####Flask Colab###################################################################################################################################################
+                                    headers = {
+                                        'Content-type': 'application/json', 'Accept': 'text/plain'}
+                                    response = requests.post(
+                                        uri + '/predict', data=jsonImage, headers=headers)
+                                    label = str(response.text)
+                                
+
+                                
+                                
+                                #label = azure_prediction(jsonImage, uri)
                             else:
-                                st.error("Can you please upload an image 🙇🏽‍♂️")
+                                label = "error"
+                                st.error("JsonImage error")
+                                
+                            st.success(label)
+                            st.success("Time taken is : " + str(time.time()- t))
+                        
+                        else:
+                            st.error("Can you please upload an image 🙇🏽‍♂️")
                     else:
                         pass#st.error("Button not pressed")
                 else:
@@ -343,6 +344,58 @@ def main():
         except Exception as e:
             st.error('Service unavailable -> Is the Server Running?')
             st.error(str(e))
+            
+        ###################################################################################################################################################################################
+        
+        try:
+            if uri:
+                if all(x in uri for x in checking_list):
+                    #st.write(str(uriparts in uri for uriparts in checking_list))
+                    if st.button(button_strings):
+                        if uploaded_file is not None or image_bytes is not None:
+                                t = time.time()
+                                if jsonImage:
+
+                                    if not Flasking:
+                                        ####Azure ML######################################################################################################################################################
+                                        headers = {
+                                            "Content-Type": "application/json"}
+                                        response = requests.post(
+                                            uri, data=jsonImage, headers=headers)
+                                        label = str(response.text)
+                                    else:
+                                        #####Flask Colab###################################################################################################################################################
+                                        headers = {
+                                            'Content-type': 'application/json', 'Accept': 'text/plain'}
+                                        response = requests.post(
+                                            uri + '/predict', data=jsonImage, headers=headers)
+                                        label = str(response.text)
+
+                                    #label = azure_prediction(jsonImage, uri)
+                                else:
+                                    label = "error"
+                                    st.error("JsonImage error")
+
+                                st.success(label)
+                                st.success("Time taken is : " +
+                                           str(time.time() - t))
+
+                        else:
+                            st.error("Can you please upload an image 🙇🏽‍♂️")
+                    else:
+                        pass  # st.error("Button not pressed")
+                else:
+                    uri = ""
+                    st.error(
+                        "URL is not correct/valid or empty. Did you include the /score? ")
+            else:
+                pass
+                #st.error("URL is empty.")
+        except Exception as e:
+            st.error('Service unavailable -> Is the Server Running?')
+            st.error(str(e))
+            
+            ########################################################################################################################################################################
             
             
 
