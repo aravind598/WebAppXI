@@ -299,6 +299,7 @@ def main():
                 #modified_image_byte.seek(0)
                 placeholder = st.image(modified_image_byte, use_column_width=True)
                 camera = True
+                st.write("HI")
             else:   
                 jsonImage = cache_image(image_byte=upload, azure=True)
                 modified_image_byte = cache_image(
@@ -306,6 +307,7 @@ def main():
                 #modified_image_byte.seek(0)
                 placeholder = st.image(
                     modified_image_byte, use_column_width=True)
+                st.write("BYTE")
         elif image_bytes is not None:
             jsonImage = cache_image(image_byte=image1, azure=True)
             placeholder = st.image(image1, use_column_width=True)
