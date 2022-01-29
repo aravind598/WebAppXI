@@ -144,7 +144,7 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera =
     #print(image.size)
     
     if camera:
-        image = image.rotate(270)
+        image = image.rotate(180)
     
     #Lower the image size by decreasing its quality
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
