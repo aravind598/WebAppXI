@@ -115,7 +115,7 @@ def call_interpreter(model_path):
 @st.experimental_memo
 @st.cache
 @cache
-def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes:
+def cache_image(image_byte: bytes, azure = False, img_shape: int = 224, camera = False) -> bytes:
     """[Cache the image and makes the image smaller before doing stuff]
 
     Args:
@@ -142,6 +142,9 @@ def cache_image(image_byte: bytes, azure = False, img_shape: int = 224) -> bytes
     image = ImageOps.fit(image, size, Image.ANTIALIAS)
     
     #print(image.size)
+    
+    if camera:
+        image = image.rotate(270)
     
     #Lower the image size by decreasing its quality
     image.save(byteImgIO, format = "JPEG", optimize=True,quality = 90)
