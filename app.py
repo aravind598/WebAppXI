@@ -590,7 +590,7 @@ def main():
         display_team("Your Awesome Name", "./assets/profile_pic.png","Your Awesome Affliation","hello@youareawesome.com")
 
     elif choice == "Train":
-        
+        st.header("Model Online Updating")
         training_label = None
         #Expander 1
         my_expandering = st.expander(label='Model URL Input')
@@ -626,7 +626,10 @@ def main():
                         
                         if jsonImage:
                             headers = {"Content-Type": "application/json"}
-                            response = requests.post(uri, data=jsonImage, headers=headers)
+                            response = None
+                            while response == None:
+                                with st.spinner("Model Running in the Cloud...Please Wait"):
+                                    response = requests.post(uri, data=jsonImage, headers=headers)
                             label = str(response.text)
                             st.write(label)
                    
